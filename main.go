@@ -11,7 +11,7 @@ func main() {
 	app.Use(cors.New(Cors))
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success"})
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success deploy ulang"})
 	})
 	app.Post("/webhook", func(c *fiber.Ctx) error {
 		var h model.Header

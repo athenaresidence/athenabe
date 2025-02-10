@@ -28,3 +28,7 @@ type Satpam struct {
 type JadwalPos struct {
 	Shift string
 }
+
+type Header struct {
+	Secret string `reqHeader:"secret"`
+}

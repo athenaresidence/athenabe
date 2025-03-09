@@ -40,7 +40,14 @@ func main() {
 				IsGroup:  msg.Is_group,
 				Messages: "ngops... ngops\nkuyy..",
 			}
-			atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			statusCode, result, err := atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(result)
+			}
+			if statusCode != 200 {
+				return c.Status(fiber.StatusExpectationFailed).JSON(result)
+			}
+			return c.Status(fiber.StatusOK).JSON(result)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

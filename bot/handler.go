@@ -76,6 +76,14 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		}
 		mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
 		return
+	} else {
+		reply = "Selamat datang kak " + msg.Alias_name
+		if user.Alamat == "" {
+			reply += "\n kakak belum mengisi alamat silahkan mengisi alamat pengiriman disini"
+		}
+		if user.Provinsi == "" {
+			reply += "\nKakak belum share loc alamat pengiriman silahkan share lock lokasi pengiriman kak"
+		}
 	}
 	return
 

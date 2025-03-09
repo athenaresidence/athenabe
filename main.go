@@ -39,22 +39,14 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusFailedDependency).JSON(err)
 		}
-		if msg.Phone_number == "6281312000300" {
+		if msg.Phone_number == "6281312000300" && !msg.Is_group {
 			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 			dt := &model.TextMessage{
 				To:       msg.Chat_number,
 				IsGroup:  msg.Is_group,
 				Messages: "ngops... ngops\nkuyy..",
 			}
-			statusCode, result, err := atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
-			if err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(err)
-			}
-			if statusCode != 200 {
-				result.Response = profile.Token + " " + config.APIWAText + " " + dt.To + " " + dt.Messages
-				return c.Status(fiber.StatusExpectationFailed).JSON(err)
-			}
-			return c.Status(fiber.StatusOK).JSON(result)
+			atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

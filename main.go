@@ -40,7 +40,7 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusFailedDependency).JSON(err)
 		}
-		if msg.Phone_number == "6281312000300" && !msg.Is_group {
+		if !msg.Is_group {
 			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 			dt := &model.TextMessage{
 				To:      msg.Chat_number,

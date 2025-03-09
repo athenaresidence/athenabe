@@ -35,10 +35,11 @@ type Header struct {
 }
 
 type Profile struct {
-	Token       string `bson:"token"`
-	Phonenumber string `bson:"phonenumber"`
-	Secret      string `bson:"secret"`
-	URL         string `bson:"url"`
-	QRKeyword   string `bson:"qrkeyword"`
-	PublicKey   string `bson:"publickey"`
+	Token            string `bson:"token"`
+	Phonenumber      string `bson:"phonenumber"`
+	AdminPhonenumber string `bson:"adminphonenumber"`
+	Secret           string `bson:"secret"`
+	URL              string `bson:"url"`
+	QRKeyword        string `bson:"qrkeyword"`
+	PublicKey        string `bson:"publickey"`
 }

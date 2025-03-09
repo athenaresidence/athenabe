@@ -76,19 +76,27 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
 		return
 	} else {
-		reply = "Selamat datang kak " + msg.Alias_name
 		if user.Provinsi == "" {
+			reply = "Selamat datang kak " + msg.Alias_name
 			reply += "\nKakak belum share loc alamat pengiriman silahkan share lock lokasi pengiriman kak"
 		} else if user.Alamat == "" {
+			reply = "Selamat datang kak " + msg.Alias_name
 			reply += "\nKakak belum mengisi alamat silahkan mengisi alamat pengiriman dengan mengetikkan *alamatpengirimanpaperka:* di depan alamat atau klik saja disini https://wa.me/628112109691?text=alamatpengirimanpaperka:%0A"
 		} else {
-			reply += "\nAlamat pengiriman:\n" + user.Alamat + "\n" + user.Kelurahan + "," + user.Kecamatan + "," + user.Kota + "," + user.Provinsi
+			reply = UserTerdaftar(user)
 		}
 	}
 	return
 
 }
 
-func PendaftaranUser() {
-
+func UserTerdaftar(user model.UserResellerPaperka) (reply string) {
+	_, err := mgdb.GetOneDoc[model.Session](config.Mongoconnpaperka, "session", bson.M{"userid": user.Phonenumber})
+	if err == mongo.ErrNoDocuments {
+		reply = "Selamat datang kak " + user.Nama
+		reply += "\nAlamat pengiriman:\n" + user.Alamat + "\n" + user.Kelurahan + "," + user.Kecamatan + "," + user.Kota + "," + user.Provinsi
+		reply = "\n\nMohon tunggu sebentar, mimin sebentar lagi akan membalas"
+		return
+	}
+	return
 }

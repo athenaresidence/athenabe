@@ -1,6 +1,10 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type UserResellerPaperka struct {
 	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty" query:"id" url:"_id,omitempty" reqHeader:"token"`
@@ -12,4 +16,10 @@ type UserResellerPaperka struct {
 	Provinsi    string             `json:"provinsi" bson:"provinsi"`
 	Email       string             `json:"email" bson:"email"`
 	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
+}
+
+type Session struct {
+	ID        string    `bson:"_id,omitempty"`
+	UserID    string    `bson:"userid"`
+	CreatedAt time.Time `bson:"createdAt"`
 }

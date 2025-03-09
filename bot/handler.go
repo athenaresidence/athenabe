@@ -79,7 +79,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 	} else {
 		if user.Provinsi == "" {
 			reply = "Selamat datang kak " + msg.Alias_name
-			reply += "\nKakak belum share loc alamat pengiriman silahkan share lock lokasi pengiriman kak"
+			reply += "\nKakak belum share location alamat pengiriman silahkan share location lokasi pengiriman kak"
 		} else if user.Alamat == "" {
 			reply = "Selamat datang kak " + msg.Alias_name
 			reply += "\nKakak belum mengisi alamat silahkan mengisi alamat pengiriman dengan mengetikkan *alamatpengirimanpaperka:* di depan alamat atau klik saja disini https://wa.me/628112109691?text=alamatpengirimanpaperka:%0A"

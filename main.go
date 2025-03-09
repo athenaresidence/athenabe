@@ -24,6 +24,10 @@ func main() {
 	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
 		var h model.Header
 		c.ReqHeaderParser(&h)
+		if h.Secret != config.PaperkaSecret {
+			return c.Status(fiber.StatusForbidden).JSON(h)
+		}
+
 		return c.Status(fiber.StatusOK).JSON(h)
 	})
 

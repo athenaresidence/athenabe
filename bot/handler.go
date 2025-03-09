@@ -13,18 +13,8 @@ import (
 
 func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 	user, err := mgdb.GetOneDoc[model.UserResellerPaperka](config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number})
-	if err == mongo.ErrNoDocuments {
-		reply = "Selamat datang kak " + msg.Alias_name
-		reply += "\nSilahkan share lock lokasi pengiriman dulu kak"
-		user := model.UserResellerPaperka{
-			Nama:        msg.Alias_name,
-			Phonenumber: msg.Phone_number,
-		}
-		mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
-		return
-	}
 	if msg.Latitude != 0.0 {
-		reply = fmt.Sprintf("Lokasi kak %s di:\n Lat:%.2f Long:%.2f", user.Nama, msg.Latitude, msg.Longitude)
+		reply = fmt.Sprintf("Lokasi kak %s di:\n Lat:%.2f Long:%.2f", msg.Alias_name, msg.Latitude, msg.Longitude)
 		return
 	}
 	if strings.Contains(msg.Message, "alamatpengirimanpaperka:") {
@@ -35,6 +25,20 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		mgdb.ReplaceOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, user)
 		return
 	}
+	if err == mongo.ErrNoDocuments {
+		reply = "Selamat datang kak " + msg.Alias_name
+		reply += "\nSilahkan share lock lokasi pengiriman dulu kak"
+		user := model.UserResellerPaperka{
+			Nama:        msg.Alias_name,
+			Phonenumber: msg.Phone_number,
+		}
+		mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+		return
+	}
 	return
+
+}
+
+func PendaftaranUser() {
 
 }

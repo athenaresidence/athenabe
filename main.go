@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gocroot/lite/bot"
 	"github.com/gocroot/lite/config"
 	"github.com/gocroot/lite/helper/atapi"
 	"github.com/gocroot/lite/model"
@@ -42,10 +43,10 @@ func main() {
 		if msg.Phone_number == "6281312000300" && !msg.Is_group {
 			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 			dt := &model.TextMessage{
-				To:       msg.Chat_number,
-				IsGroup:  msg.Is_group,
-				Messages: "ngops... ngops\nkuyy..",
+				To:      msg.Chat_number,
+				IsGroup: msg.Is_group,
 			}
+			dt.Messages = bot.HandlerPesan(msg, profile)
 			atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 		}
 

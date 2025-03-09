@@ -69,7 +69,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 	}
 	if userbelumterdaftar {
 		reply = "Selamat datang kak " + msg.Alias_name
-		reply += "\nSilahkan share lock lokasi pengiriman dulu kak"
+		reply += "\nSilahkan share location lokasi pengiriman dulu kak"
 		user := model.UserResellerPaperka{
 			Nama:        msg.Alias_name,
 			Phonenumber: msg.Phone_number,

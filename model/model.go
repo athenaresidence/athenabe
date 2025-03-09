@@ -33,3 +33,12 @@ type Header struct {
 	Secret string `reqHeader:"secret,omitempty"` //whatsauth ke webhook
 	Token  string `reqHeader:"token,omitempty"`  //webhook ke whatsauth kirim pesan
 }
+
+type Profile struct {
+	Token       string `bson:"token"`
+	Phonenumber string `bson:"phonenumber"`
+	Secret      string `bson:"secret"`
+	URL         string `bson:"url"`
+	QRKeyword   string `bson:"qrkeyword"`
+	PublicKey   string `bson:"publickey"`
+}

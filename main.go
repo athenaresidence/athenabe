@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/gocroot/lite/config"
+	"github.com/gocroot/lite/helper/atapi"
 	"github.com/gocroot/lite/model"
+	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func main() {
@@ -31,7 +34,13 @@ func main() {
 		var msg model.WAMessage
 		c.BodyParser(&msg)
 		if msg.Phone_number == "6281312000300" {
-
+			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+			dt := &model.TextMessage{
+				To:       msg.Chat_number,
+				IsGroup:  msg.Is_group,
+				Messages: "ngops... ngops\nkuyy..",
+			}
+			atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

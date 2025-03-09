@@ -64,7 +64,6 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 			}
 			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
 		}
-		mgdb.ReplaceOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, user)
 		return
 	}
 	if userbelumterdaftar {
@@ -79,7 +78,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 	} else {
 		reply = "Selamat datang kak " + msg.Alias_name
 		if user.Alamat == "" {
-			reply += "\n kakak belum mengisi alamat silahkan mengisi alamat pengiriman disini"
+			reply += "\nKakak belum mengisi alamat silahkan mengisi alamat pengiriman disini"
 		}
 		if user.Provinsi == "" {
 			reply += "\nKakak belum share loc alamat pengiriman silahkan share lock lokasi pengiriman kak"

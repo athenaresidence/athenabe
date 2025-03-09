@@ -21,7 +21,7 @@ func main() {
 		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success deploy ulang"})
 	})
-	app.Post("/webhook", func(c *fiber.Ctx) error {
+	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
 		var h model.Header
 		c.ReqHeaderParser(&h)
 		return c.Status(fiber.StatusOK).JSON(h)

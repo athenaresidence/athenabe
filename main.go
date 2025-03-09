@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/bot"
 	"github.com/gocroot/lite/config"
-	"github.com/gocroot/lite/helper/atapi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
@@ -47,7 +47,7 @@ func main() {
 				IsGroup: msg.Is_group,
 			}
 			dt.Messages = bot.HandlerPesan(msg, profile)
-			atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

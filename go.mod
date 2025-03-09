@@ -1,8 +1,9 @@
 module github.com/gocroot/lite
 
-go 1.23.4
+go 1.24.1
 
 require (
+	github.com/gocroot/jsonapi v0.0.1
 	github.com/gocroot/mgdb v0.1.1
 	github.com/gofiber/fiber/v2 v2.52.6
 	go.mongodb.org/mongo-driver v1.17.2

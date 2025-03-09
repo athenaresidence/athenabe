@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
-	"github.com/gocroot/lite/helper/atapi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,7 +24,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 			Longitude: msg.Longitude,
 			Latitude:  msg.Latitude,
 		}
-		_, res, _ := atapi.PostStructWithToken[model.Region]("Login", profile.Token, loc, config.APIRegion)
+		_, res, _ := jsonapi.PostStructWithToken[model.Region]("Login", profile.Token, loc, config.APIRegion)
 		reply = fmt.Sprintf("Lokasi kak %s di:\n%s %s %s %s\nLat:%.2f Long:%.2f", msg.Alias_name, res.Village, res.SubDistrict, res.District, res.Province, msg.Latitude, msg.Longitude)
 		user.Kelurahan = res.Village
 		user.Kecamatan = res.SubDistrict
@@ -112,5 +112,5 @@ func NotifKeAdmin(user model.UserResellerPaperka, profile model.Profile) {
 		IsGroup: false,
 	}
 	dt.Messages = "Ada pesan baru dari pelanggan " + user.Nama + " dari " + user.Kota + " Mohon cek WA Toko kak"
-	go atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+	go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 }

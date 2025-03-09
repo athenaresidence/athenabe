@@ -26,13 +26,19 @@ func main() {
 	})
 	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
 		var h model.Header
-		c.ReqHeaderParser(&h)
+		err := c.ReqHeaderParser(&h)
+		if err != nil {
+			return c.Status(fiber.StatusFailedDependency).JSON(err)
+		}
 		resp := model.Response{Response: h.Secret}
 		if h.Secret != config.PaperkaSecret {
 			return c.Status(fiber.StatusForbidden).JSON(resp)
 		}
 		var msg model.WAMessage
-		c.BodyParser(&msg)
+		err = c.BodyParser(&msg)
+		if err != nil {
+			return c.Status(fiber.StatusFailedDependency).JSON(err)
+		}
 		if msg.Phone_number == "6281312000300" {
 			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 			dt := &model.TextMessage{
@@ -42,10 +48,10 @@ func main() {
 			}
 			statusCode, result, err := atapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 			if err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(result)
+				return c.Status(fiber.StatusBadRequest).JSON(err)
 			}
 			if statusCode != 200 {
-				return c.Status(fiber.StatusExpectationFailed).JSON(result)
+				return c.Status(fiber.StatusExpectationFailed).JSON(err)
 			}
 			return c.Status(fiber.StatusOK).JSON(result)
 		}

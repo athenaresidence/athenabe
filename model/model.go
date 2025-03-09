@@ -30,5 +30,6 @@ type JadwalPos struct {
 }
 
 type Header struct {
-	Secret string `reqHeader:"secret"`
+	Secret string `reqHeader:"secret,omitempty"` //whatsauth ke webhook
+	Token  string `reqHeader:"token,omitempty"`  //webhook ke whatsauth kirim pesan
 }

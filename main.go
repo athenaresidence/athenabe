@@ -24,11 +24,17 @@ func main() {
 	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
 		var h model.Header
 		c.ReqHeaderParser(&h)
+		resp := model.Response{Response: h.Secret}
 		if h.Secret != config.PaperkaSecret {
-			return c.Status(fiber.StatusForbidden).JSON(h)
+			return c.Status(fiber.StatusForbidden).JSON(resp)
+		}
+		var msg model.WAMessage
+		c.BodyParser(&msg)
+		if msg.Phone_number == "6281312000300" {
+
 		}
 
-		return c.Status(fiber.StatusOK).JSON(h)
+		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
 	app.Listen(IPPort)

@@ -10,6 +10,6 @@ type UserResellerPaperka struct {
 	Kecamatan   string             `json:"kecamatan" bson:"kecamatan"`
 	Kota        string             `json:"kota" bson:"kota"`
 	Provinsi    string             `json:"provinsi" bson:"provinsi"`
-	Email       string             `json:"email" bson:"alamat"`
+	Email       string             `json:"email" bson:"email"`
 	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
 }

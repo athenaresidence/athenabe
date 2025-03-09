@@ -96,7 +96,7 @@ func UserTerdaftar(user model.UserResellerPaperka, profile model.Profile) (reply
 	if err == mongo.ErrNoDocuments {
 		reply = "Selamat datang kak " + user.Nama
 		reply += "\nAlamat pengiriman:\n" + user.Alamat + "\n" + user.Kelurahan + "," + user.Kecamatan + "," + user.Kota + "," + user.Provinsi
-		reply = "\n\nMohon tunggu sebentar, mimin sebentar lagi akan membalas"
+		reply += "\n\nMohon tunggu sebentar, mimin sebentar lagi akan membalas"
 		go NotifKeAdmin(user, profile)
 		ses.CreatedAt = time.Now()
 		ses.UserID = user.Phonenumber

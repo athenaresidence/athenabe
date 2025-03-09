@@ -51,6 +51,7 @@ func main() {
 				return c.Status(fiber.StatusBadRequest).JSON(err)
 			}
 			if statusCode != 200 {
+				result.Response = profile.Token + " " + config.APIWAText + " " + dt.To + " " + dt.Messages
 				return c.Status(fiber.StatusExpectationFailed).JSON(err)
 			}
 			return c.Status(fiber.StatusOK).JSON(result)

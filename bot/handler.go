@@ -50,10 +50,20 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		alamat := strings.TrimSpace(result[1])
 		reply = "alamat pengiriman kakak :\n" + alamat
 		user.Alamat = alamat
+		if userbelumterdaftar {
+			user.Nama = msg.Alias_name
+			user.Phonenumber = msg.Phone_number
+			mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+		} else {
+			updateFields := bson.M{
+				"alamat": alamat,
+			}
+			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
+		}
 		mgdb.ReplaceOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, user)
 		return
 	}
-	if err == mongo.ErrNoDocuments {
+	if userbelumterdaftar {
 		reply = "Selamat datang kak " + msg.Alias_name
 		reply += "\nSilahkan share lock lokasi pengiriman dulu kak"
 		user := model.UserResellerPaperka{

@@ -13,7 +13,7 @@ import (
 
 func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 	user, err := mgdb.GetOneDoc[model.UserResellerPaperka](config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number})
-	if err != mongo.ErrNoDocuments {
+	if err == mongo.ErrNoDocuments {
 		reply = "Selamat datang kak " + msg.Alias_name
 		reply += "\nSilahkan share lock lokasi pengiriman dulu kak"
 		user := model.UserResellerPaperka{

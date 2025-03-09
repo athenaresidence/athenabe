@@ -32,8 +32,12 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		if userbelumterdaftar {
 			user.Nama = msg.Alias_name
 			user.Phonenumber = msg.Phone_number
-			mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
-
+			idinsert, err := mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+			if err != nil {
+				reply += err.Error()
+			} else {
+				reply += idinsert.String()
+			}
 		} else {
 			updateFields := bson.M{
 				"kelurahan": res.Village,

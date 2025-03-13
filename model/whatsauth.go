@@ -45,3 +45,17 @@ type TextMessage struct {
 	IsGroup  bool   `json:"isgroup,omitempty"`
 	Messages string `json:"messages"`
 }
+
+type WebHook struct {
+	URL           string `bson:"url" json:"url"`
+	Secret        string `bson:"secret" json:"secret"`
+	ReadStatusOff bool   `bson:"readstatusoff,omitempty" json:"readstatusoff,omitempty"`
+	SendTyping    bool   `bson:"sendtyping,omitempty" json:"sendtyping,omitempty"`
+}
+type User struct {
+	PhoneNumber string  `bson:"phonenumber" json:"phonenumber"`
+	DeviceID    uint16  `bson:"deviceid" json:"deviceid"`
+	WebHook     WebHook `bson:"webhook" json:"webhook"`
+	Mongostring string  `bson:"mongostring" json:"mongostring"`
+	Token       string  `bson:"token" json:"token"`
+}

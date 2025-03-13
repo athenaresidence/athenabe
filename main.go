@@ -47,7 +47,17 @@ func main() {
 				IsGroup: msg.Is_group,
 			}
 			dt.Messages = bot.HandlerPesan(msg, profile)
-			jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			//refresh token
+			var wh model.WebHook
+			wh.Secret = config.PaperkaSecret
+			wh.URL = profile.URL
+			wh.ReadStatusOff = true
+			stat, userwa, _ := jsonapi.PostStructWithToken[model.User]("secret", profile.Secret, wh, config.APISignUp)
+			if stat == 200 {
+				profile.Token = userwa.Token
+				mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"phonenumber": profile.Phonenumber}, bson.M{"token": userwa.Token})
+			}
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

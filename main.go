@@ -23,6 +23,21 @@ func main() {
 		if config.ErrorMongoconnpaperka != nil {
 			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
 		}
+		//refresh token
+		profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+		var wh model.WebHook
+		wh.Secret = config.PaperkaSecret
+		wh.URL = profile.URL
+		wh.ReadStatusOff = true
+		stat, userwa, err := jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
+		if err != nil {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})
+		}
+		if stat == 200 {
+			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
+		} else {
+			c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat})
+		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success deploy ulang"})
 	})
 	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
@@ -48,16 +63,6 @@ func main() {
 			}
 			dt.Messages = bot.HandlerPesan(msg, profile)
 			go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
-			//refresh token
-			var wh model.WebHook
-			wh.Secret = config.PaperkaSecret
-			wh.URL = profile.URL
-			wh.ReadStatusOff = true
-			stat, userwa, _ := jsonapi.PostStructWithToken[model.User]("secret", profile.Secret, wh, config.APISignUp)
-			if stat == 200 {
-				profile.Token = userwa.Token
-				mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"phonenumber": profile.Phonenumber}, bson.M{"token": userwa.Token})
-			}
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

@@ -68,8 +68,8 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		return
 	}
 	if userbelumterdaftar {
-		reply = "Selamat datang kak " + msg.Alias_name
-		reply += "\nSilahkan share location lokasi pengiriman dulu kak"
+		reply = "Selamat datang di Paperka kak " + msg.Alias_name
+		//reply += "\nSilahkan share location lokasi pengiriman dulu kak"
 		user := model.UserResellerPaperka{
 			Nama:        msg.Alias_name,
 			Phonenumber: msg.Phone_number,
@@ -78,11 +78,11 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		return
 	} else {
 		if user.Provinsi == "" {
-			reply = "Selamat datang kak " + msg.Alias_name
-			reply += "\nKakak belum share location alamat pengiriman silahkan share location lokasi pengiriman kak"
+			reply = "Selamat datang di Paperka kak " + msg.Alias_name
+			//reply += "\nKakak belum share location alamat pengiriman silahkan share location lokasi pengiriman kak"
 		} else if user.Alamat == "" {
-			reply = "Selamat datang kak " + msg.Alias_name
-			reply += "\nKakak belum mengisi alamat silahkan mengisi alamat pengiriman dengan mengetikkan *alamatpengirimanpaperka:* di depan alamat atau klik saja disini https://wa.me/628112109691?text=alamatpengirimanpaperka:%0A"
+			reply = "Selamat datang di Paperka kak " + msg.Alias_name
+			//reply += "\nKakak belum mengisi alamat silahkan mengisi alamat pengiriman dengan mengetikkan *alamatpengirimanpaperka:* di depan alamat atau klik saja disini https://wa.me/628112109691?text=alamatpengirimanpaperka:%0A"
 		} else {
 			reply = UserTerdaftar(user, profile)
 		}

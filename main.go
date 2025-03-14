@@ -36,7 +36,7 @@ func main() {
 		if stat == 200 {
 			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
 		} else {
-			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat, "err": err.Error()})
+			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat})
 		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success deploy ulang"})
 	})

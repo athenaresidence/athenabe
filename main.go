@@ -34,11 +34,14 @@ func main() {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})
 		}
 		if stat == 200 {
-			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
+			res, err := mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
+			if err != nil {
+				return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": err.Error()})
+			}
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
 		} else {
 			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat})
 		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success deploy ulang"})
 	})
 	app.Post("/webhook/paperka", func(c *fiber.Ctx) error {
 		var h model.Header

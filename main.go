@@ -72,7 +72,7 @@ func main() {
 		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
-	app.Post("/webhook/athena", func(c *fiber.Ctx) error {
+	app.Post("/webhook/athena/:waphonenumber", func(c *fiber.Ctx) error {
 		var h model.Header
 		err := c.ReqHeaderParser(&h)
 		if err != nil {
@@ -87,7 +87,7 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusFailedDependency).JSON(err)
 		}
-		waphonenumber := "628176900300"
+		waphonenumber := c.Params("waphonenumber")
 		prof, err := helper.GetAppProfile(waphonenumber, config.Mongoconn)
 		if err != nil {
 			resp.Response = err.Error()

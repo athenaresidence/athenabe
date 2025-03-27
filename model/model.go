@@ -9,20 +9,37 @@ type Wag struct {
 type Penghuni struct {
 	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty" query:"id" url:"_id,omitempty" reqHeader:"token"`
 	Nama        string             `json:"nama" bson:"nama"`
-	Nomorrumah  string             `json:"nomorrumah" bson:"nomorrumah"`
+	Nomorrumah  string             `json:"nomorrumah,omitempty" bson:"nomorrumah,omitempty"`
 	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
-	Kendaraan   []Kendaraan        `json:"kendaraan" bson:"kendaraan"`
+	Kendaraan   []Kendaraan        `json:"kendaraan,omitempty" bson:"kendaraan,omitempty"`
+}
+
+type Pengantar struct {
+	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty" query:"id" url:"_id,omitempty" reqHeader:"token"`
+	Nama        string             `json:"nama" bson:"nama"`
+	Nomorrumah  string             `json:"nomorrumah,omitempty" bson:"nomorrumah,omitempty"`
+	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
+	Kendaraan   []Kendaraan        `json:"kendaraan,omitempty" bson:"kendaraan,omitempty"`
+}
+
+type Tamu struct {
+	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty" query:"id" url:"_id,omitempty" reqHeader:"token"`
+	Nama        string             `json:"nama" bson:"nama"`
+	Nomorrumah  string             `json:"nomorrumah,omitempty" bson:"nomorrumah,omitempty"`
+	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
+	Kendaraan   []Kendaraan        `json:"kendaraan,omitempty" bson:"kendaraan,omitempty"`
 }
 
 type Kendaraan struct {
-	Merk      string
-	PlatNomor string
-	Warna     string
+	Merk      string `json:"merk,omitempty" bson:"merk,omitempty"`
+	PlatNomor string `json:"platnomor,omitempty" bson:"platnomor,omitempty"`
+	Warna     string `json:"warna,omitempty" bson:"warna,omitempty"`
 }
 
 type Satpam struct {
-	Nama        string
-	Phonenumber string
+	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty" query:"id" url:"_id,omitempty" reqHeader:"token"`
+	Nama        string             `json:"nama" bson:"nama"`
+	Phonenumber string             `json:"phonenumber" bson:"phonenumber"`
 }
 
 type JadwalPos struct {

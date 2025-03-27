@@ -46,6 +46,7 @@ func main() {
 		wh.Secret = config.PaperkaSecret
 		wh.URL = profile.URL
 		wh.ReadStatusOff = false
+		wh.SendTyping = true
 		stat, userwa, err = jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
 		if err != nil {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})

@@ -101,7 +101,7 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	if err != mongo.ErrNoDocuments {
 		msg := "*Pulang Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
 		notifgroup := model.ImageMessage{
-			To:          Profile.WAGroupPengurus,
+			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
 			Base64Image: Pesan.Filedata,
 			Caption:     msg,
@@ -173,7 +173,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	if err != mongo.ErrNoDocuments {
 		msg := "*Masuk Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber
 		notifgroup := model.ImageMessage{
-			To:          Profile.WAGroupPengurus,
+			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
 			Base64Image: Pesan.Filedata,
 			Caption:     msg,

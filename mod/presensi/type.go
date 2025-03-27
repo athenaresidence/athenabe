@@ -63,6 +63,7 @@ type FaceInfo struct {
 
 type PresensiDomyikado struct {
 	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Nama        string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	PhoneNumber string             `json:"phonenumber,omitempty" bson:"phonenumber,omitempty"`
 	Skor        float64            `json:"skor,omitempty" bson:"skor,omitempty"`
 	KetJam      string             `json:"ketjam,omitempty" bson:"ketjam,omitempty"`

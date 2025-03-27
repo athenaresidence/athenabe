@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gocroot/jsonapi"
+	"github.com/gocroot/lite/config"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -84,7 +85,7 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	seconds := int(diff.Seconds()) % 60
 	KetJam := fmt.Sprintf("%d jam, %d menit, %d detik", hours, minutes, seconds)
 
-	skor := diff.Seconds() / 18000 //selisih waktu dibagi 8 jam
+	skor := (diff.Seconds() / 43200) * 100 //selisih waktu dibagi 12 jam
 	skorValue := fmt.Sprintf("%f", skor)
 	//post ke backedn domyikado
 	datapresensi := PresensiDomyikado{
@@ -95,12 +96,19 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 		LamaDetik:   diff.Seconds(),
 		Lokasi:      pstoday.Lokasi.Nama,
 	}
-	statuscode, httpresp, err := jsonapi.PostStructWithToken[model.Response]("secret", conf.DomyikadoSecret, datapresensi, conf.DomyikadoPresensiURL)
-	if err != nil {
-		return "Akses ke endpoint domyikado gagal: " + err.Error()
-	}
-	if statuscode != http.StatusOK {
-		return "Salah posting endpoint domyikado: " + httpresp.Response + "\ninfo\n" + httpresp.Info
+	//kalo satpam maka kirim ke grup dan simpan database
+	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
+	if err != mongo.ErrNoDocuments {
+		msg := "*Pulang Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
+		notifgroup := model.ImageMessage{
+			To:          Profile.WAGroupPengurus,
+			IsGroup:     true,
+			Base64Image: Pesan.Filedata,
+			Caption:     msg,
+		}
+		datapresensi.Nama = satpam.Nama
+		go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+		mgdb.InsertOneDoc(config.Mongoconn, "logpresensi", datapresensi)
 	}
 	return "Hai kak, " + Pesan.Alias_name + "\nBerhasil Presensi Pulang di lokasi:" + pstoday.Lokasi.Nama + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
 
@@ -160,6 +168,20 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
 	}
+	//kalo satpam maka kirim ke grup
+	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
+	if err != mongo.ErrNoDocuments {
+		msg := "*Masuk Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber
+		notifgroup := model.ImageMessage{
+			To:          Profile.WAGroupPengurus,
+			IsGroup:     true,
+			Base64Image: Pesan.Filedata,
+			Caption:     msg,
+		}
+		go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+
+	}
+
 	return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi:" + pstoday.Lokasi.Nama + "\n*Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
 
 }
@@ -172,7 +194,7 @@ func PresensiMasuk(Pesan model.WAMessage, db *mongo.Database) (reply string) {
 	latitude := fmt.Sprintf("%f", Pesan.Latitude)
 	lokasiuser, err := GetLokasi(db, Pesan.Longitude, Pesan.Latitude)
 	if err != nil {
-		return "Mohon maaf kak, kakak " + Pesan.Alias_name + " belum berada di lokasi presensi, silahkan menuju lokasi presensi dahulu baru cekin masuk."
+		return "Mohon maaf kak, kakak " + Pesan.Alias_name + " belum berada di lokasi presensi, silahkan menuju lokasi presensi dahulu baru *cekin presensi masuk*."
 	}
 	if lokasiuser.Nama == "" {
 		return "Nama nya kosong kak " + Pesan.Alias_name
@@ -188,7 +210,7 @@ func PresensiMasuk(Pesan model.WAMessage, db *mongo.Database) (reply string) {
 		return "Gagal insert ke database kak " + Pesan.Alias_name
 	}
 
-	return "Hai.. hai.. kakak atas nama:\n" + Pesan.Alias_name + "\nLongitude: " + longitude + "\nLatitude: " + latitude + "\nLokasi:" + lokasiuser.Nama + "\nsilahkan dilanjutkan dengan selfie di lokasi ya maximal 5 menit setelah share live location, jangan lupa ditambah keyword\n*selfie presensi masuk*"
+	return "Hai.. hai.. kakak atas nama:\n*" + Pesan.Alias_name + "*\nLongitude: " + longitude + "\nLatitude: " + latitude + "\nLokasi:" + lokasiuser.Nama + "\nsilahkan dilanjutkan dengan selfie di lokasi ya maximal 5 menit setelah share live location, jangan lupa ditambah keyword\n*selfie presensi masuk*"
 }
 
 func PresensiPulang(Pesan model.WAMessage, db *mongo.Database) (reply string) {

@@ -67,4 +67,6 @@ type Profile struct {
 	Triggerword      string `bson:"triggerword"`
 	TelegramToken    string `bson:"telegramtoken"`
 	TelegramName     string `bson:"telegramname"`
+	WAGroupWarga     string `bson:"wagrupwarga"`
+	WAGroupPengurus  string `bson:"wagruppengurus"`
 }

@@ -107,7 +107,10 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 			Caption:     msg,
 		}
 		datapresensi.Nama = satpam.Nama
-		go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+		stat, resp, err := jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+		if stat != 200 {
+			return "Ada kesalahan pengiriman notif ke grup\n" + err.Error() + "\n" + resp.Response
+		}
 		mgdb.InsertOneDoc(config.Mongoconn, "logpresensi", datapresensi)
 	}
 	return "Hai kak, " + Pesan.Alias_name + "\nBerhasil Presensi Pulang di lokasi:" + pstoday.Lokasi.Nama + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
@@ -178,11 +181,14 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 			Base64Image: Pesan.Filedata,
 			Caption:     msg,
 		}
-		go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+		stat, resp, err := jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
+		if stat != 200 {
+			return "Ada kesalahan pengiriman notif ke grup\n" + err.Error() + "\n" + resp.Response
+		}
 
 	}
 
-	return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi:" + pstoday.Lokasi.Nama + "\n*Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
+	return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
 
 }
 

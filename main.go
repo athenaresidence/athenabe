@@ -40,6 +40,22 @@ func main() {
 				return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": err.Error()})
 			}
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
+		}
+		//refresh token athena
+		profile, _ = mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
+		wh.Secret = config.PaperkaSecret
+		wh.URL = profile.URL
+		wh.ReadStatusOff = false
+		stat, userwa, err = jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
+		if err != nil {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})
+		}
+		if stat == 200 {
+			res, err := mgdb.UpdateOneDoc(config.Mongoconn, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
+			if err != nil {
+				return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": err.Error()})
+			}
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
 		} else {
 			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat})
 		}

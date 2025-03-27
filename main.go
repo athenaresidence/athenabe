@@ -4,6 +4,7 @@ import (
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/bot"
 	"github.com/gocroot/lite/config"
+	"github.com/gocroot/lite/helper"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
@@ -86,15 +87,19 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusFailedDependency).JSON(err)
 		}
+		waphonenumber := "628176900300"
+		prof, err := helper.GetAppProfile(waphonenumber, config.Mongoconn)
+		if err != nil {
+			resp.Response = err.Error()
+			return c.Status(fiber.StatusServiceUnavailable).JSON(resp)
+		}
 
-		if !msg.Is_group {
-			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
-			dt := &model.TextMessage{
-				To:      msg.Chat_number,
-				IsGroup: msg.Is_group,
+		if msg.Message != "" {
+			resp, err = helper.WebHook(prof.QRKeyword, waphonenumber, config.WAAPIQRLogin, config.APIWAText, msg, config.Mongoconn)
+			if err != nil {
+				resp.Response = err.Error()
 			}
-			dt.Messages = bot.HandlerPesan(msg, profile)
-			go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+			return c.Status(fiber.StatusOK).JSON(resp)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(resp)

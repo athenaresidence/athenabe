@@ -23,6 +23,7 @@ type WAMessage struct {
 
 type Response struct {
 	Response string `json:"response"`
+	Info     string `json:"info,omitempty"`
 }
 
 type DocumentMessage struct {
@@ -58,4 +59,26 @@ type User struct {
 	WebHook     WebHook `bson:"webhook" json:"webhook"`
 	Mongostring string  `bson:"mongostring" json:"mongostring"`
 	Token       string  `bson:"token" json:"token"`
+}
+
+type Requests struct {
+	Messages string `json:"messages" bson:"messages"`
+}
+
+type WhatsauthRequest struct {
+	Uuid        string `json:"uuid,omitempty" bson:"uuid,omitempty"`
+	Phonenumber string `json:"phonenumber,omitempty" bson:"phonenumber,omitempty"`
+	Aliasname   string `json:"aliasname,omitempty" bson:"aliasname,omitempty"`
+	Delay       uint32 `json:"delay,omitempty" bson:"delay,omitempty"`
+}
+
+type Reply struct {
+	Message string `bson:"messsage"`
+}
+
+type Chats struct {
+	IdChats   string  `json:"id_chats" bson:"idChats"`
+	Message   string  `json:"message" bson:"message"`
+	Responses string  `json:"responses" bson:"responses"`
+	Score     float64 `json:"score" bson:"score"`
 }

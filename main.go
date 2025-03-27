@@ -71,5 +71,34 @@ func main() {
 		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
+	app.Post("/webhook/athena", func(c *fiber.Ctx) error {
+		var h model.Header
+		err := c.ReqHeaderParser(&h)
+		if err != nil {
+			return c.Status(fiber.StatusFailedDependency).JSON(err)
+		}
+		resp := model.Response{Response: h.Secret}
+		if h.Secret != config.PaperkaSecret {
+			return c.Status(fiber.StatusForbidden).JSON(resp)
+		}
+		var msg model.WAMessage
+		err = c.BodyParser(&msg)
+		if err != nil {
+			return c.Status(fiber.StatusFailedDependency).JSON(err)
+		}
+
+		if !msg.Is_group {
+			profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+			dt := &model.TextMessage{
+				To:      msg.Chat_number,
+				IsGroup: msg.Is_group,
+			}
+			dt.Messages = bot.HandlerPesan(msg, profile)
+			go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+		}
+
+		return c.Status(fiber.StatusOK).JSON(resp)
+	})
+
 	app.Listen(IPPort)
 }

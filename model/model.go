@@ -40,6 +40,14 @@ type Profile struct {
 	AdminPhonenumber string `bson:"adminphonenumber"`
 	Secret           string `bson:"secret"`
 	URL              string `bson:"url"`
+	URLAPIText       string `bson:"urlapitext"`
+	URLAPIImage      string `bson:"urlapiimage"`
+	URLAPIDoc        string `bson:"urlapidoc"`
+	URLQRLogin       string `bson:"urlqrlogin"`
 	QRKeyword        string `bson:"qrkeyword"`
 	PublicKey        string `bson:"publickey"`
+	Botname          string `bson:"botname"`
+	Triggerword      string `bson:"triggerword"`
+	TelegramToken    string `bson:"telegramtoken"`
+	TelegramName     string `bson:"telegramname"`
 }

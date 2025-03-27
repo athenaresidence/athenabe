@@ -109,7 +109,7 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 		datapresensi.Nama = satpam.Nama
 		stat, resp, err := jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
 		if stat != 200 {
-			return "Ada kesalahan pengiriman notif ke grup\n" + err.Error() + "\n" + resp.Response
+			return "Ada kesalahan pengiriman notif ke grup\n" + notifgroup.To + "\n" + notifgroup.Caption + "\n" + notifgroup.Base64Image + "\n" + err.Error() + "\n" + resp.Response
 		}
 		mgdb.InsertOneDoc(config.Mongoconn, "logpresensi", datapresensi)
 	}

@@ -73,13 +73,25 @@ func autoCompleteKeyword(msg *model.WAMessage) {
 	if msg.Filedata != "" && msg.Message == "foto masuk" {
 		msg.Message = "selfie presensi masuk"
 	}
+	if msg.Filedata != "" && msg.Message == "masuk" {
+		msg.Message = "selfie presensi masuk"
+	}
 	if msg.Filedata != "" && msg.Message == "foto pulang" {
+		msg.Message = "selfie presensi pulang"
+	}
+	if msg.Filedata != "" && msg.Message == "pulang" {
+		msg.Message = "selfie presensi pulang"
+	}
+	if msg.Filedata != "" && msg.Message == "keluar" {
 		msg.Message = "selfie presensi pulang"
 	}
 	if msg.LiveLoc && msg.Message == "masuk" {
 		msg.Message = "cekin presensi masuk"
 	}
 	if msg.LiveLoc && msg.Message == "pulang" {
+		msg.Message = "cekin presensi pulang"
+	}
+	if msg.LiveLoc && msg.Message == "keluar" {
 		msg.Message = "cekin presensi pulang"
 	}
 

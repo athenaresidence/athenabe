@@ -17,7 +17,6 @@ func NormalizeAndTypoCorrection(message *string, MongoConn *mongo.Database, Typo
 	}
 	//merubah ke huruf kecil semua
 	*message = strings.ToLower(*message)
-	*message = strings.TrimSpace(*message)
 	*message = cleanString(*message)
 }
 

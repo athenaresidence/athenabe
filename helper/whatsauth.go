@@ -69,6 +69,22 @@ func HandlerQRLogin(msg model.WAMessage, WAKeyword string, WAPhoneNumber string,
 	return
 }
 
+func autoCompleteKeyword(msg *model.WAMessage) {
+	if msg.Filename != "" && msg.Message == "foto masuk" {
+		msg.Message = "selfie presensi masuk"
+	}
+	if msg.Filename != "" && msg.Message == "foto pulang" {
+		msg.Message = "selfie presensi pulang"
+	}
+	if msg.LiveLoc && msg.Message == "masuk" {
+		msg.Message = "cekin presensi masuk"
+	}
+	if msg.LiveLoc && msg.Message == "pulang" {
+		msg.Message = "cekin presensi pulang"
+	}
+
+}
+
 func HandlerIncomingMessage(msg model.WAMessage, WAPhoneNumber string, db *mongo.Database, WAAPIMessage string) (resp model.Response, err error) {
 	_, bukanbot := GetAppProfile(msg.Phone_number, db) //cek apakah nomor adalah bot
 	if bukanbot != nil {                               //jika tidak terdapat di profile
@@ -79,6 +95,7 @@ func HandlerIncomingMessage(msg model.WAMessage, WAPhoneNumber string, db *mongo
 		}
 		msg.Message = NormalizeHiddenChar(msg.Message)
 		module.NormalizeAndTypoCorrection(&msg.Message, db, "typo")
+		autoCompleteKeyword(&msg) //memenuhi beberapa kondisi tertentu kemudian melengkapi keyowrdnya
 		modname, group, personal := module.GetModuleName(WAPhoneNumber, msg, db, "module")
 		var msgstr string
 		var isgrup bool

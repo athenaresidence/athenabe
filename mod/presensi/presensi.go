@@ -31,6 +31,14 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan dalam pengambilan config di database " + err.Error()
 	}
+	//kasih pesan tunggu sebentar untuk proses foto ke endpoint leafly
+	pesantunggu := model.TextMessage{
+		To:       Pesan.Chat_number,
+		IsGroup:  Pesan.Is_group,
+		Messages: "Mohon tunggu sebentar kak... gambar kakak sedang kami proses dulu ya kak...",
+	}
+	go jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesantunggu, config.APIWAText)
+	//kirim ke leafly untuk pengecekan gambar
 	statuscode, faceinfo, err := jsonapi.PostStructWithToken[FaceInfo]("secret", conf.LeaflySecret, dt, conf.LeaflyURL)
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan pemanggilan API leafly " + err.Error()
@@ -134,6 +142,14 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan dalam pengambilan config di database " + err.Error()
 	}
+	//kasih pesan tunggu sebentar untuk proses foto ke endpoint leafly
+	pesantunggu := model.TextMessage{
+		To:       Pesan.Chat_number,
+		IsGroup:  Pesan.Is_group,
+		Messages: "Mohon tunggu sebentar kak... gambar kakak sedang kami proses dulu ya kak...",
+	}
+	go jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesantunggu, config.APIWAText)
+	//sending foto ke leafly
 	statuscode, faceinfo, err := jsonapi.PostStructWithToken[FaceInfo]("secret", conf.LeaflySecret, dt, conf.LeaflyURL)
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan pemanggilan API leafly :" + err.Error()
@@ -167,14 +183,10 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		Filehash:    faceinfo.FileHash,
 		Remaining:   faceinfo.Remaining,
 	}
-	_, err = mgdb.InsertOneDoc(db, "selfie", pselfie)
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
-	}
 	//kalo satpam maka kirim ke grup
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
 	if err != mongo.ErrNoDocuments {
-		msg := "*Masuk Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber
+		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
@@ -185,9 +197,13 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if stat != 200 {
 			return "Ada kesalahan pengiriman notif ke grup\ngrup: " + notifgroup.To + "\ncaption: " + notifgroup.Caption + "\n" + err.Error() + "\n" + resp.Response
 		}
-
+		pselfie.Nama = satpam.Nama
+		pselfie.PhoneNumber = satpam.Phonenumber
 	}
-
+	_, err = mgdb.InsertOneDoc(db, "selfie", pselfie)
+	if err != nil {
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
+	}
 	return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
 
 }

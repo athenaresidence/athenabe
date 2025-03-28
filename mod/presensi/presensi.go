@@ -183,7 +183,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		}
 		stat, resp, err := jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifgroup, config.APIWAIMG)
 		if stat != 200 {
-			return "Ada kesalahan pengiriman notif ke grup\n" + notifgroup.To + "\n" + notifgroup.Caption + "\n" + notifgroup.Base64Image + "\n" + err.Error() + "\n" + resp.Response
+			return "Ada kesalahan pengiriman notif ke grup\ngrup: " + notifgroup.To + "\ncaption: " + notifgroup.Caption + "\n" + err.Error() + "\n" + resp.Response
 		}
 
 	}

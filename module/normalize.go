@@ -2,6 +2,7 @@ package module
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,5 +15,19 @@ func NormalizeAndTypoCorrection(message *string, MongoConn *mongo.Database, Typo
 		re := regexp.MustCompile(`(?i)` + typo.From + ``)
 		*message = re.ReplaceAllString(*message, typo.To)
 	}
+	//merubah ke huruf kecil semua
+	*message = strings.ToLower(*message)
+	*message = strings.TrimSpace(*message)
+	*message = cleanString(*message)
+}
 
+func cleanString(input string) string {
+	// Trim leading & trailing spaces/tabs
+	cleaned := strings.TrimSpace(input)
+
+	// Replace multiple spaces/tabs with a single space
+	re := regexp.MustCompile(`\s+`)
+	cleaned = re.ReplaceAllString(cleaned, " ")
+
+	return cleaned
 }

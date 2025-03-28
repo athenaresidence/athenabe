@@ -70,10 +70,10 @@ func HandlerQRLogin(msg model.WAMessage, WAKeyword string, WAPhoneNumber string,
 }
 
 func autoCompleteKeyword(msg *model.WAMessage) {
-	if msg.Filename != "" && msg.Message == "foto masuk" {
+	if msg.Filedata != "" && msg.Message == "foto masuk" {
 		msg.Message = "selfie presensi masuk"
 	}
-	if msg.Filename != "" && msg.Message == "foto pulang" {
+	if msg.Filedata != "" && msg.Message == "foto pulang" {
 		msg.Message = "selfie presensi pulang"
 	}
 	if msg.LiveLoc && msg.Message == "masuk" {

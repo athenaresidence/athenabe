@@ -3,6 +3,7 @@ package config
 import "os"
 
 var PaperkaSecret = os.Getenv("PAPERKASECRET")
+var AthenaBotNumber = os.Getenv("BOTNUMBER")
 
 var APIWAText = "https://api.wa.my.id/api/v2/send/message/text"
 var APIWAIMG = "https://api.wa.my.id/api/send/message/image"

@@ -11,5 +11,6 @@ func Web(app *fiber.App) {
 	app.Post("/webhook/athena/:waphonenumber", controller.BotAthena)
 	//rate
 	app.Get("/rate/selfie/:idselfie", controller.GetCekInSelfieData)
+	app.Post("/rate/selfie", controller.PostRateSelfie)
 
 }

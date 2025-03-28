@@ -1,7 +1,11 @@
 package controller
 
 import (
+	"strconv"
+
+	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
+	"github.com/gocroot/lite/helper"
 	"github.com/gocroot/lite/mod/presensi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
@@ -61,9 +65,24 @@ func PostRateSelfie(c *fiber.Ctx) error {
 	if err != nil {
 		respn := model.Response{
 			Response: err.Error(),
-			Info:     rating.ID,
+			Info:     "Tidak berhasil update rating ke selfie",
 		}
 		return c.Status(fiber.StatusBadRequest).JSON(respn)
 	}
+	//kirim pesan ke yang piket
+	prof, err := helper.GetAppProfile(config.AthenaBotNumber, config.Mongoconn)
+	if err != nil {
+		respn := model.Response{
+			Response: err.Error(),
+			Info:     "Tidak berhasil mendapatkan profile aplikasi",
+		}
+		return c.Status(fiber.StatusServiceUnavailable).JSON(respn)
+	}
+	dt := model.TextMessage{
+		To:       hasil.PhoneNumber,
+		IsGroup:  false,
+		Messages: "Anda mendapatkan feedback pekerjaan dengan rating bintang " + strconv.Itoa(rating.Rating) + "\nDengan feedback:\n" + rating.Komentar,
+	}
+	go jsonapi.PostStructWithToken[model.Response]("Token", prof.Token, dt, config.APIWAText)
 	return c.Status(fiber.StatusBadRequest).JSON(res)
 }

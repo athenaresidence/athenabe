@@ -85,7 +85,7 @@ func PostRateSelfie(c *fiber.Ctx) error {
 	}
 	go jsonapi.PostStructWithToken[model.Response]("Token", prof.Token, dt, config.APIWAText)
 	respn := model.Response{
-		Info: strconv.FormatInt(res.UpsertedCount, 10),
+		Info: strconv.FormatInt(res.ModifiedCount, 10),
 	}
 	return c.Status(fiber.StatusOK).JSON(respn)
 }

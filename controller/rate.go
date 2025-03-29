@@ -84,5 +84,8 @@ func PostRateSelfie(c *fiber.Ctx) error {
 		Messages: "Anda mendapatkan feedback pekerjaan dengan rating bintang " + strconv.Itoa(rating.Rating) + "\nDengan feedback:\n" + rating.Komentar,
 	}
 	go jsonapi.PostStructWithToken[model.Response]("Token", prof.Token, dt, config.APIWAText)
-	return c.Status(fiber.StatusOK).JSON(res)
+	respn := model.Response{
+		Info: strconv.FormatInt(res.UpsertedCount, 10),
+	}
+	return c.Status(fiber.StatusOK).JSON(respn)
 }

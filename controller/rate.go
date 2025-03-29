@@ -32,7 +32,7 @@ func GetCekInSelfieData(c *fiber.Ctx) error {
 		}
 		return c.Status(fiber.StatusBadRequest).JSON(respn)
 	}
-	return c.Status(fiber.StatusBadRequest).JSON(hasil)
+	return c.Status(fiber.StatusOK).JSON(hasil)
 }
 
 func PostRateSelfie(c *fiber.Ctx) error {
@@ -84,5 +84,5 @@ func PostRateSelfie(c *fiber.Ctx) error {
 		Messages: "Anda mendapatkan feedback pekerjaan dengan rating bintang " + strconv.Itoa(rating.Rating) + "\nDengan feedback:\n" + rating.Komentar,
 	}
 	go jsonapi.PostStructWithToken[model.Response]("Token", prof.Token, dt, config.APIWAText)
-	return c.Status(fiber.StatusBadRequest).JSON(res)
+	return c.Status(fiber.StatusOK).JSON(res)
 }

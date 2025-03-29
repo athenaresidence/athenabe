@@ -18,16 +18,9 @@ var Config = fiber.Config{
 }
 
 var origins = []string{
-	"https://naskah.bukupedia.co.id",
-	"https://auth.ulbi.ac.id",
-	"https://sip.ulbi.ac.id",
-	"https://euis.ulbi.ac.id",
-	"https://home.ulbi.ac.id",
-	"https://alpha.ulbi.ac.id",
-	"https://dias.ulbi.ac.id",
-	"https://iteung.ulbi.ac.id",
-	"https://whatsauth.github.io",
-	"https://pmb.ulbi.ac.id",
+	"https://athenaresidence.github.io",
+	"https://athenaresidence.id.biz.id",
+	"https://athenaresidence.if.co.id",
 }
 
 var headers = []string{

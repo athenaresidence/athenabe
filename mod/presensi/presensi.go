@@ -186,7 +186,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	//kalo satpam maka kirim ke grup
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
 	if err != mongo.ErrNoDocuments {
-		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber
+		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber + "\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + pselfie.ID.Hex() + "\n\n> Mari jadikan komplek kita lebih baik"
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
 			IsGroup:     true,

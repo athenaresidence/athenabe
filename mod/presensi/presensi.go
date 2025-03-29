@@ -205,7 +205,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		}
 		return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
 	}
-	return "Hai kak, " + Pesan.Alias_name + ". Mohon maaf kakak nomor belum terdaftar di sistem kita, hubungin admin ya kak.\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama
+	return "Hai kak, " + Pesan.Alias_name + ". Mohon maaf nomor kakak belum terdaftar di sistem kita, hubungin admin ya kak.\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama
 
 }
 

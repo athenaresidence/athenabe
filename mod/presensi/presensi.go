@@ -136,7 +136,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	filter := bson.M{"_id": mgdb.TodayFilter(), "phonenumber": Pesan.Phone_number, "ismasuk": true}
 	pstoday, err := mgdb.GetOneDoc[PresensiLokasi](db, "presensi", filter)
 	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum cekin share live location hari ini, silahkan share live loc dengan ditambah keyword\n*cekin presensi masuk*\n_" + err.Error() + "_"
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum cekin share live location hari ini, silahkan share live loc dengan ditambah caption\n*cekin presensi masuk*\n_" + err.Error() + "_"
 	}
 	conf, err := mgdb.GetOneDoc[Config](db, "config", bson.M{"phonenumber": Profile.Phonenumber})
 	if err != nil {
@@ -186,7 +186,13 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	//kalo satpam maka kirim ke grup
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
 	if err != mongo.ErrNoDocuments {
-		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber + "\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + pselfie.ID.Hex() + "\n\n> Mari jadikan komplek kita lebih baik"
+		pselfie.Nama = satpam.Nama
+		pselfie.PhoneNumber = satpam.Phonenumber
+		selfistat, err := mgdb.InsertOneDoc(db, "selfie", pselfie)
+		if err != nil {
+			return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
+		}
+		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber + "\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + selfistat.Hex() + "\n\n> Mari jadikan komplek kita lebih baik"
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
@@ -197,14 +203,9 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if stat != 200 {
 			return "Ada kesalahan pengiriman notif ke grup\ngrup: " + notifgroup.To + "\ncaption: " + notifgroup.Caption + "\n" + err.Error() + "\n" + resp.Response
 		}
-		pselfie.Nama = satpam.Nama
-		pselfie.PhoneNumber = satpam.Phonenumber
+		return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
 	}
-	_, err = mgdb.InsertOneDoc(db, "selfie", pselfie)
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
-	}
-	return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa _cekin presensi pulang_ ya kak biar dapat skor*"
+	return "Hai kak, " + Pesan.Alias_name + ". Mohon maaf kakak nomor belum terdaftar di sistem kita, hubungin admin ya kak.\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama
 
 }
 

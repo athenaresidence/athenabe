@@ -1,7 +1,6 @@
 package satpam
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -35,7 +34,6 @@ func ReportBulanKemarin() bool {
 	msg := "*Rekapitulasi Kehadiran Satpam Bulan Kemarin:*\n"
 	for i, satpam := range satpams {
 		msg += strconv.Itoa(i+1) + ". " + satpam.Nama + " : "
-		fmt.Println("Nilai:", satpam)
 		// Filter berdasarkan _id dan phonenumber
 		filter := bson.M{
 			"_id": bson.M{

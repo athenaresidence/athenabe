@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
+	"github.com/gocroot/lite/helper/satpam"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,8 @@ func Homepage(c *fiber.Ctx) error {
 	if config.ErrorMongoconnpaperka != nil {
 		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
 	}
+	//report rekap bulanan presensi satpam
+	go satpam.ReportBulanKemarin()
 	//refresh token
 	profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 	var wh model.WebHook

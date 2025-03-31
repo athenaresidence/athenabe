@@ -18,8 +18,7 @@ func Homepage(c *fiber.Ctx) error {
 	if config.ErrorMongoconnpaperka != nil {
 		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
 	}
-	//report rekap bulanan presensi satpam
-	go satpam.ReportBulanKemarin()
+
 	//refresh token
 	profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 	var wh model.WebHook
@@ -37,8 +36,11 @@ func Homepage(c *fiber.Ctx) error {
 		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
 	}
-	//refresh token athena
+	//dapetin profile apps athena
 	profile, _ = mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
+	//report rekap bulanan presensi satpam
+	go satpam.ReportBulanKemarin(profile)
+	//refresh token athena
 	wh.Secret = config.PaperkaSecret
 	wh.URL = profile.URL
 	wh.ReadStatusOff = false

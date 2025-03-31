@@ -118,7 +118,8 @@ func HandlerIncomingMessage(msg model.WAMessage, WAPhoneNumber string, db *mongo
 				msgstr = kimseok.GetMessage(profile, msg, profile.Botname, db)
 			}
 
-		} else if strings.Contains(strings.ToLower(msg.Message), profile.Triggerword) { //chat group
+		} else if strings.Contains(strings.ToLower(msg.Message), profile.Triggerword+" ") || strings.Contains(strings.ToLower(msg.Message), " "+profile.Triggerword) || strings.ToLower(msg.Message) == profile.Triggerword { //chat group
+			msg.Message = HapusNamaPanggilanBot(msg.Message, profile.Triggerword, profile.Botname)
 			isgrup = true
 			if group && modname != "" {
 				msgstr = mod.Caller(profile, modname, msg, db)
@@ -138,6 +139,29 @@ func HandlerIncomingMessage(msg model.WAMessage, WAPhoneNumber string, db *mongo
 
 	}
 	return
+}
+
+// HapusNamaPanggilanBot menghapus semua kemunculan nama panggilan dan nama lengkap dari pesan
+func HapusNamaPanggilanBot(msg string, namapanggilan string, namalengkap string) string {
+	// Mengubah pesan dan nama panggilan menjadi lowercase untuk pencocokan yang tidak peka huruf besar-kecil
+	namapanggilan = strings.ToLower(namapanggilan)
+	namalengkap = strings.ToLower(namalengkap)
+	msg = strings.ToLower(msg)
+
+	// Hapus semua kemunculan nama lengkap dari pesan
+	msg = strings.ReplaceAll(msg, namalengkap+" ", "")
+	msg = strings.ReplaceAll(msg, " "+namalengkap, "")
+	//msg = strings.ReplaceAll(msg, namalengkap, "")
+
+	// Hapus semua kemunculan nama panggilan dari pesan
+	msg = strings.ReplaceAll(msg, namapanggilan+" ", "")
+	msg = strings.ReplaceAll(msg, " "+namapanggilan, "")
+	//msg = strings.ReplaceAll(msg, namapanggilan, "")
+
+	// Menghapus spasi tambahan jika ada
+	msg = strings.TrimSpace(msg)
+
+	return msg
 }
 
 func GetRandomReplyFromMongo(msg model.WAMessage, botname string, db *mongo.Database) string {

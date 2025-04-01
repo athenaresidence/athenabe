@@ -31,12 +31,12 @@ func ReportBulanKemarin(profile model.Profile) string {
 		filter := FilterBulanKemarendenganPhoneNumber(satpam.Phonenumber)
 		count, _ := mgdb.GetCountDoc(config.Mongoconn, "logpresensi", filter)
 		msg += strconv.Itoa(int(count)) + " shift\n"
-		dt := &model.TextMessage{
-			To:       satpam.Phonenumber,
-			IsGroup:  false,
-			Messages: msg,
-		}
-		go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+		//dt := &model.TextMessage{
+		//	To:       satpam.Phonenumber,
+		//	IsGroup:  false,
+		//	Messages: msg,
+		//}
+		//go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 	}
 	dt := &model.TextMessage{
 		To:       profile.WAGroupWarga,

@@ -8,6 +8,7 @@ import (
 	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func Homepage(c *fiber.Ctx) error {
@@ -18,45 +19,37 @@ func Homepage(c *fiber.Ctx) error {
 	if config.ErrorMongoconnpaperka != nil {
 		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
 	}
-
-	//refresh token
+	//dapetin profile apps athena
+	profileathena, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
+	stata, resa, erra := RefreshToken(profileathena, false)
+	//profile paperka
 	profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+	statb, resb, errb := RefreshToken(profile, true)
+	//rekap satpam setiap tanggal 1
+	lapket := satpam.ReportBulanKemarin(profileathena)
+	//return semuanya
+	return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{
+		"httpathena":   stata,
+		"resathena":    resa,
+		"errathena":    erra,
+		"httppaperka":  statb,
+		"respaperka":   resb,
+		"errpaperka":   errb,
+		"reportsatpam": lapket})
+
+}
+
+func RefreshToken(profile model.Profile, readstatus bool) (stat int, res *mongo.UpdateResult, err error) {
 	var wh model.WebHook
 	wh.Secret = config.PaperkaSecret
 	wh.URL = profile.URL
-	wh.ReadStatusOff = true
+	wh.ReadStatusOff = readstatus
 	stat, userwa, err := jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
 	if err != nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})
+		return
 	}
 	if stat == 200 {
-		res, err := mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
-		if err != nil {
-			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": err.Error()})
-		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
+		res, err = mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
 	}
-	//dapetin profile apps athena
-	profile, _ = mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
-	//report rekap bulanan presensi satpam
-	go satpam.ReportBulanKemarin(profile)
-	//refresh token athena
-	wh.Secret = config.PaperkaSecret
-	wh.URL = profile.URL
-	wh.ReadStatusOff = false
-	//wh.SendTyping = true
-	stat, userwa, err = jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
-	if err != nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err.Error(), "stat": stat})
-	}
-	if stat == 200 {
-		res, err := mgdb.UpdateOneDoc(config.Mongoconn, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
-		if err != nil {
-			return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": err.Error()})
-		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": res})
-	} else {
-		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"stat": stat})
-	}
-
+	return
 }

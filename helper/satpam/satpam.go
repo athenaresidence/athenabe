@@ -12,14 +12,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func ReportBulanKemarin(profile model.Profile) bool {
+func ReportBulanKemarin(profile model.Profile) string {
 	// Ambil tanggal hari ini saja dan satu kali saja dijalankan
 	if time.Now().Day() != 1 {
-		return false
+		return "bukan tanggal 1"
 	}
 	countlog, _ := mgdb.GetCountDoc(config.Mongoconn, "logreportbulan", FilterHariIni())
 	if countlog > 0 {
-		return false
+		return "sudah dilakukan rekap pada hari ini sebelumnya"
 	}
 
 	//ambil data satpam
@@ -46,8 +46,11 @@ func ReportBulanKemarin(profile model.Profile) bool {
 	go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
 	var lap LaporanBulanan
 	lap.Message = msg
-	mgdb.InsertOneDoc(config.Mongoconn, "logreportbulan", lap)
-	return true
+	id, err := mgdb.InsertOneDoc(config.Mongoconn, "logreportbulan", lap)
+	if err != nil {
+		return err.Error() + " Error ketika insert ke logreportbulan"
+	}
+	return "berhasil insert: " + id.Hex()
 }
 
 func FilterBulanKemarendenganPhoneNumber(phonenumber string) (filter bson.M) {

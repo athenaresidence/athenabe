@@ -43,14 +43,17 @@ func ReportBulanKemarin(profile model.Profile) string {
 		IsGroup:  true,
 		Messages: msg,
 	}
-	go jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+	httpcode, res, err := jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+	if err != nil {
+		return "gagal kirim pesan ke grup warga: " + err.Error()
+	}
 	var lap LaporanBulanan
 	lap.Message = msg
 	id, err := mgdb.InsertOneDoc(config.Mongoconn, "logreportbulan", lap)
 	if err != nil {
 		return err.Error() + " Error ketika insert ke logreportbulan"
 	}
-	return "berhasil insert: " + id.Hex()
+	return "berhasil insert: " + id.Hex() + "|" + strconv.Itoa(httpcode) + "|" + res.Response + "|" + res.Info
 }
 
 func FilterBulanKemarendenganPhoneNumber(phonenumber string) (filter bson.M) {

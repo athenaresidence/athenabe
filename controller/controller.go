@@ -11,34 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Homepageold(c *fiber.Ctx) error {
-	//checkstatus koneksi db
-	if config.ErrorMongoconn != nil {
-		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
-	}
-	if config.ErrorMongoconnpaperka != nil {
-		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
-	}
-	//dapetin profile apps athena
-	profileathena, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
-	stata, resa, erra := RefreshToken(profileathena, false)
-	//profile paperka
-	profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
-	statb, resb, errb := RefreshToken(profile, true)
-	//rekap satpam setiap tanggal 1
-	lapket := satpam.ReportBulanKemarin(profileathena)
-	//return semuanya
-	return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{
-		"httpathena":   stata,
-		"resathena":    resa,
-		"errathena":    erra,
-		"httppaperka":  statb,
-		"respaperka":   resb,
-		"errpaperka":   errb,
-		"reportsatpam": lapket})
-
-}
-
 func Homepage(c *fiber.Ctx) error {
 	// Periksa status koneksi database
 	if config.ErrorMongoconn != nil || config.ErrorMongoconnpaperka != nil {

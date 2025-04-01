@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Homepage(c *fiber.Ctx) error {
+func Homepageold(c *fiber.Ctx) error {
 	//checkstatus koneksi db
 	if config.ErrorMongoconn != nil {
 		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
@@ -37,6 +37,41 @@ func Homepage(c *fiber.Ctx) error {
 		"errpaperka":   errb,
 		"reportsatpam": lapket})
 
+}
+
+func Homepage(c *fiber.Ctx) error {
+	// Periksa status koneksi database
+	if config.ErrorMongoconn != nil || config.ErrorMongoconnpaperka != nil {
+		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
+	}
+
+	// Ambil profil Athena
+	profileAthena, err := mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Athena", "error": err.Error()})
+	}
+	stata, resa, erra := RefreshToken(profileAthena, false)
+
+	// Ambil profil Paperka
+	profilePaperka, err := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Paperka", "error": err.Error()})
+	}
+	statb, resb, errb := RefreshToken(profilePaperka, true)
+
+	// Rekap laporan Satpam setiap tanggal 1
+	laporanSatpam := satpam.ReportBulanKemarin(profileAthena)
+
+	// Kembalikan respons dalam format JSON
+	return c.JSON(fiber.Map{
+		"httpAthena":   stata,
+		"resAthena":    resa,
+		"errAthena":    erra,
+		"httpPaperka":  statb,
+		"resPaperka":   resb,
+		"errPaperka":   errb,
+		"reportSatpam": laporanSatpam,
+	})
 }
 
 func RefreshToken(profile model.Profile, readstatus bool) (stat int, res *mongo.UpdateResult, err error) {

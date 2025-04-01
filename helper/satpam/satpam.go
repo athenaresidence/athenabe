@@ -53,7 +53,19 @@ func ReportBulanKemarin(profile model.Profile) string {
 	if err != nil {
 		return err.Error() + " Error ketika insert ke logreportbulan"
 	}
+	go KirimReportKeSatpam(msg, satpams, profile)
 	return "berhasil insert: " + id.Hex() + "|" + strconv.Itoa(httpcode) + "|" + res.Response + "|" + res.Info
+}
+
+func KirimReportKeSatpam(msg string, satpams []model.Satpam, profile model.Profile) {
+	for _, satpam := range satpams {
+		dt := &model.TextMessage{
+			To:       satpam.Phonenumber,
+			IsGroup:  false,
+			Messages: msg,
+		}
+		jsonapi.PostStructWithToken[model.Response]("Token", profile.Token, dt, config.APIWAText)
+	}
 }
 
 func FilterBulanKemarendenganPhoneNumber(phonenumber string) (filter bson.M) {

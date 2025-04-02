@@ -39,11 +39,7 @@ func Homepage(c *fiber.Ctx) error {
 		"httpAthena":   stata,
 		"resAthena":    resa,
 		"errAthena":    erra,
-		"httpPaperka":  statb,
 		"urlAthena":    profileAthena.URL,
-		"urlPaperka":   profilePaperka.URL,
-		"resPaperka":   resb,
-		"errPaperka":   errb,
 		"reportSatpam": laporanSatpam,
 	})
 }

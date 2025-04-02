@@ -25,11 +25,11 @@ func Homepage(c *fiber.Ctx) error {
 	stata, resa, erra := RefreshToken(profileAthena, false, config.Mongoconn)
 
 	// Ambil profil Paperka
-	profilePaperka, err := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Paperka", "error": err.Error()})
-	}
-	statb, resb, errb := RefreshToken(profilePaperka, true, config.Mongoconnpaperka)
+	//profilePaperka, err := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+	//if err != nil {
+	//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Paperka", "error": err.Error()})
+	//}
+	//statb, resb, errb := RefreshToken(profilePaperka, true, config.Mongoconnpaperka)
 
 	// Rekap laporan Satpam setiap tanggal 1
 	laporanSatpam := satpam.ReportBulanKemarin(profileAthena)

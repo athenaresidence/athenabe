@@ -58,7 +58,7 @@ func RefreshToken(profile model.Profile, readstatus bool, db *mongo.Database) (s
 		return
 	}
 	if stat == 200 {
-		res, err = mgdb.UpdateOneDoc(db, "profile", bson.M{"secret": profile.Secret}, bson.M{"token": userwa.Token})
+		res, err = mgdb.UpdateOneDoc(db, "profile", bson.M{"secret": profile.Secret}, bson.M{"token": userwa.Token, "url": userwa.WebHook.URL, "secret": userwa.WebHook.Secret})
 	}
 	return
 }

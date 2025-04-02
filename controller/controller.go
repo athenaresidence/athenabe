@@ -22,14 +22,14 @@ func Homepage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Athena", "error": err.Error()})
 	}
-	stata, resa, erra := RefreshToken(profileAthena, false)
+	stata, resa, erra := RefreshToken(profileAthena, false, config.Mongoconn)
 
 	// Ambil profil Paperka
 	profilePaperka, err := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Gagal mendapatkan profil Paperka", "error": err.Error()})
 	}
-	statb, resb, errb := RefreshToken(profilePaperka, true)
+	statb, resb, errb := RefreshToken(profilePaperka, true, config.Mongoconnpaperka)
 
 	// Rekap laporan Satpam setiap tanggal 1
 	laporanSatpam := satpam.ReportBulanKemarin(profileAthena)
@@ -48,9 +48,9 @@ func Homepage(c *fiber.Ctx) error {
 	})
 }
 
-func RefreshToken(profile model.Profile, readstatus bool) (stat int, res *mongo.UpdateResult, err error) {
+func RefreshToken(profile model.Profile, readstatus bool, db *mongo.Database) (stat int, res *mongo.UpdateResult, err error) {
 	var wh model.WebHook
-	wh.Secret = config.PaperkaSecret
+	wh.Secret = profile.Secret
 	wh.URL = profile.URL
 	wh.ReadStatusOff = readstatus
 	stat, userwa, err := jsonapi.PostStructWithToken[model.User]("token", profile.Token, wh, config.APISignUp)
@@ -58,7 +58,7 @@ func RefreshToken(profile model.Profile, readstatus bool) (stat int, res *mongo.
 		return
 	}
 	if stat == 200 {
-		res, err = mgdb.UpdateOneDoc(config.Mongoconnpaperka, "profile", bson.M{"secret": config.PaperkaSecret}, bson.M{"token": userwa.Token})
+		res, err = mgdb.UpdateOneDoc(db, "profile", bson.M{"secret": profile.Secret}, bson.M{"token": userwa.Token})
 	}
 	return
 }

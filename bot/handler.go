@@ -14,7 +14,7 @@ import (
 )
 
 func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
-	user, err := mgdb.GetOneDoc[model.UserResellerPaperka](config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number})
+	user, err := mgdb.GetOneDoc[model.UserResellerPaperka](config.Mongoconn, "user", bson.M{"phonenumber": msg.Phone_number})
 	var userbelumterdaftar bool
 	if err == mongo.ErrNoDocuments {
 		userbelumterdaftar = true
@@ -33,7 +33,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		if userbelumterdaftar {
 			user.Nama = msg.Alias_name
 			user.Phonenumber = msg.Phone_number
-			idinsert, err := mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+			idinsert, err := mgdb.InsertOneDoc(config.Mongoconn, "user", user)
 			if err != nil {
 				reply += err.Error()
 			} else {
@@ -46,7 +46,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 				"kota":      res.District,
 				"provinsi":  res.Province,
 			}
-			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
+			mgdb.UpdateOneDoc(config.Mongoconn, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
 		}
 		return
 	}
@@ -58,12 +58,12 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 		if userbelumterdaftar {
 			user.Nama = msg.Alias_name
 			user.Phonenumber = msg.Phone_number
-			mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+			mgdb.InsertOneDoc(config.Mongoconn, "user", user)
 		} else {
 			updateFields := bson.M{
 				"alamat": alamat,
 			}
-			mgdb.UpdateOneDoc(config.Mongoconnpaperka, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
+			mgdb.UpdateOneDoc(config.Mongoconn, "user", bson.M{"phonenumber": msg.Phone_number}, updateFields)
 		}
 		return
 	}
@@ -74,7 +74,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 			Nama:        msg.Alias_name,
 			Phonenumber: msg.Phone_number,
 		}
-		mgdb.InsertOneDoc(config.Mongoconnpaperka, "user", user)
+		mgdb.InsertOneDoc(config.Mongoconn, "user", user)
 		return
 	} else {
 		if user.Alamat == "" && user.Provinsi != "" {
@@ -89,7 +89,7 @@ func HandlerPesan(msg model.WAMessage, profile model.Profile) (reply string) {
 }
 
 func UserTerdaftar(user model.UserResellerPaperka, profile model.Profile) (reply string) {
-	ses, err := mgdb.GetOneDoc[model.Session](config.Mongoconnpaperka, "session", bson.M{"userid": user.Phonenumber})
+	ses, err := mgdb.GetOneDoc[model.Session](config.Mongoconn, "session", bson.M{"userid": user.Phonenumber})
 	if err == mongo.ErrNoDocuments {
 		reply = "Selamat datang kak " + user.Nama
 		reply += "\nAlamat pengiriman:\n" + user.Alamat + "\n" + user.Kelurahan + "," + user.Kecamatan + "," + user.Kota + "," + user.Provinsi
@@ -97,7 +97,7 @@ func UserTerdaftar(user model.UserResellerPaperka, profile model.Profile) (reply
 		go NotifKeAdmin(user, profile)
 		ses.CreatedAt = time.Now()
 		ses.UserID = user.Phonenumber
-		mgdb.InsertOneDoc(config.Mongoconnpaperka, "session", ses)
+		mgdb.InsertOneDoc(config.Mongoconn, "session", ses)
 		return
 	}
 	return

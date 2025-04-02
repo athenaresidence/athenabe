@@ -15,9 +15,3 @@ var mconn = mgdb.DBInfo{
 var Mongoconn, ErrorMongoconn = mgdb.MongoConnect(mconn)
 
 // paperka
-var mconnpaperka = mgdb.DBInfo{
-	DBString: os.Getenv("MONGOSTRINGPAPERKA"),
-	DBName:   "paperka",
-}
-
-var Mongoconnpaperka, ErrorMongoconnpaperka = mgdb.MongoConnect(mconnpaperka)

@@ -13,7 +13,7 @@ import (
 
 func Homepage(c *fiber.Ctx) error {
 	// Periksa status koneksi database
-	if config.ErrorMongoconn != nil || config.ErrorMongoconnpaperka != nil {
+	if config.ErrorMongoconn != nil {
 		return c.Status(fiber.StatusExpectationFailed).JSON(fiber.Map{"message": "Koneksi database gagal"})
 	}
 

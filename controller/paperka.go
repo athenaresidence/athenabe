@@ -26,7 +26,7 @@ func WebHookPaperka(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusFailedDependency).JSON(err)
 	}
 	if !msg.Is_group {
-		profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconnpaperka, "profile", bson.M{})
+		profile, _ := mgdb.GetOneDoc[model.Profile](config.Mongoconn, "profile", bson.M{})
 		dt := &model.TextMessage{
 			To:      msg.Chat_number,
 			IsGroup: msg.Is_group,

@@ -196,8 +196,8 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		var ratemsg string
 		if err == nil {
 			ratemsg = fmt.Sprintf(
-				"Rekap untuk %s:\nTotal Rating: %d\nRata-rata: %.2f\nDetail per rating: %v",
-				rekaprating.PhoneNumber,
+				"Rekap untuk _%s_:\nTotal Rating: %d\nRata-rata: %.2f\nDetail per rating: %v",
+				satpam.Nama,
 				rekaprating.TotalRating,
 				rekaprating.AverageRating,
 				FormatJumlahPerRating(rekaprating.JumlahPerRating),

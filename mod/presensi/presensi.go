@@ -181,7 +181,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		Filehash:    faceinfo.FileHash,
 		Remaining:   faceinfo.Remaining,
 	}
-	//kalo satpam maka kirim ke grup
+	//kalo satpam maka kirim ke grup dan diri sendiri
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
 	if err != mongo.ErrNoDocuments {
 		pselfie.Nama = satpam.Nama
@@ -190,7 +190,28 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if err != nil {
 			return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
 		}
-		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama + "\nTelepon: " + satpam.Phonenumber + "\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + selfistat.Hex() + "\n\n> Mari jadikan komplek kita lebih baik"
+		//ambil rekap bulan berjalan
+		jmlmasuk, jmlpulang := RekapBulanBerjalanPerPhoneNumber(satpam.Phonenumber)
+		rekaprating, err := RekapRatesBulanBerjalan(config.Mongoconn, satpam.Phonenumber)
+		var ratemsg string
+		if err == nil {
+			ratemsg = fmt.Sprintf(
+				"Rekap untuk %s:\nTotal Rating: %d\nRata-rata: %.2f\nDetail per rating: %v",
+				rekaprating.PhoneNumber,
+				rekaprating.TotalRating,
+				rekaprating.AverageRating,
+				FormatJumlahPerRating(rekaprating.JumlahPerRating),
+			)
+		}
+
+		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama +
+			"\nTelepon: " + satpam.Phonenumber +
+			"\n" + ratemsg +
+			"\n\nRekap Presensi Bulan ini: " +
+			"\nMasuk: " + strconv.FormatInt(jmlmasuk, 10) +
+			"\nPulang: " + strconv.FormatInt(jmlpulang, 10) +
+			"\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + selfistat.Hex() +
+			"\n\n> Mari jadikan komplek kita lebih?"
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
@@ -201,7 +222,13 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if stat != 200 {
 			return "Ada kesalahan pengiriman notif ke grup\ngrup: " + notifgroup.To + "\ncaption: " + notifgroup.Caption + "\n" + err.Error() + "\n" + resp.Response
 		}
-		return "Hai kak, " + Pesan.Alias_name + "\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama + "\n> *Jangan lupa share live loc dengan caption *pulang* setelah selesai shift ya kak, biar dianggap masuk shift jaga*"
+		return "Hai kak, " + Pesan.Alias_name +
+			"\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama +
+			"\n" + ratemsg +
+			"\n\nRekap Presensi Bulan ini: " +
+			"\nMasuk: " + strconv.FormatInt(jmlmasuk, 10) +
+			"\nPulang: " + strconv.FormatInt(jmlpulang, 10) +
+			"\n> *Jangan lupa share live loc dengan caption *pulang* setelah selesai shift ya kak, biar dianggap masuk shift jaga*"
 	}
 	return "Hai kak, " + Pesan.Alias_name + ". Mohon maaf nomor kakak belum terdaftar di sistem kita, hubungin admin ya kak.\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama
 }

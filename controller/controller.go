@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
-	"github.com/gocroot/lite/helper/satpam"
+	"github.com/gocroot/lite/mod/presensi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"github.com/gofiber/fiber/v2"
@@ -32,7 +32,7 @@ func Homepage(c *fiber.Ctx) error {
 	//statb, resb, errb := RefreshToken(profilePaperka, true, config.Mongoconnpaperka)
 
 	// Rekap laporan Satpam setiap tanggal 1
-	laporanSatpam := satpam.ReportBulanKemarin(profileAthena)
+	laporanSatpam := presensi.ReportBulanKemarin(profileAthena)
 
 	// Kembalikan respons dalam format JSON
 	return c.JSON(fiber.Map{

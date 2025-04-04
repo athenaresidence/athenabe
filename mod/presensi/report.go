@@ -1,12 +1,13 @@
-package satpam
+package presensi
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
-	"github.com/gocroot/lite/mod/presensi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,10 +22,24 @@ func RekapBulanBerjalanPerPhoneNumber(phonenumber string) (masuk, pulang int64) 
 	return
 }
 
+func FormatJumlahPerRating(jumlah map[int]int) string {
+	if len(jumlah) == 0 {
+		return "Belum ada rating"
+	}
+
+	var sb strings.Builder
+	for i := 1; i <= 5; i++ { // urutan bintang 1–5
+		if jml, ok := jumlah[i]; ok {
+			sb.WriteString(fmt.Sprintf("⭐ %d bintang: %dx\n", i, jml))
+		}
+	}
+	return sb.String()
+}
+
 func RekapRatesBulanBerjalan(db *mongo.Database, phonenumber string) (RekapRating, error) {
 	filter := FilterBulanBerjalanDenganPhoneNumber(phonenumber)
 
-	docs, err := mgdb.GetAllDoc[[]presensi.PresensiSelfie](db, "selfie", filter)
+	docs, err := mgdb.GetAllDoc[[]PresensiSelfie](db, "selfie", filter)
 	if err != nil {
 		return RekapRating{}, err
 	}

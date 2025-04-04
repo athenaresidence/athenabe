@@ -6,11 +6,53 @@ import (
 
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
+	"github.com/gocroot/lite/mod/presensi"
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func RekapBulanBerjalanPerPhoneNumber(phonenumber string) (masuk, pulang int64) {
+	filter := FilterBulanBerjalanDenganPhoneNumber(phonenumber)
+	pulang, _ = mgdb.GetCountDoc(config.Mongoconn, "logpresensi", filter)
+	masuk, _ = mgdb.GetCountDoc(config.Mongoconn, "selfie", filter)
+	return
+}
+
+func RekapRatesBulanBerjalan(db *mongo.Database, phonenumber string) (RekapRating, error) {
+	filter := FilterBulanBerjalanDenganPhoneNumber(phonenumber)
+
+	docs, err := mgdb.GetAllDoc[[]presensi.PresensiSelfie](db, "selfie", filter)
+	if err != nil {
+		return RekapRating{}, err
+	}
+
+	total := 0
+	count := 0
+	jumlahPerRating := make(map[int]int)
+
+	for _, doc := range docs {
+		for _, rate := range doc.Rates {
+			total += rate.Rating
+			count++
+			jumlahPerRating[rate.Rating]++
+		}
+	}
+
+	avg := 0.0
+	if count > 0 {
+		avg = float64(total) / float64(count)
+	}
+
+	return RekapRating{
+		PhoneNumber:     phonenumber,
+		TotalRating:     total,
+		AverageRating:   avg,
+		JumlahPerRating: jumlahPerRating,
+	}, nil
+}
 
 func ReportBulanKemarin(profile model.Profile) string {
 	// Ambil tanggal hari ini saja dan satu kali saja dijalankan
@@ -87,6 +129,32 @@ func FilterBulanKemarendenganPhoneNumber(phonenumber string) (filter bson.M) {
 	}
 	return
 
+}
+
+// selfie dan logpresensi
+func FilterBulanBerjalanDenganPhoneNumber(phonenumber string) (filter bson.M) {
+	// Ambil waktu sekarang
+	currentTime := time.Now()
+
+	// Hitung awal bulan berjalan (bulan ini)
+	startOfCurrentMonth := time.Date(currentTime.Year(), currentTime.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	// Akhir periode adalah waktu saat ini
+	endOfCurrentMonth := currentTime
+
+	// Konversi ke ObjectID berdasarkan timestamp
+	startObjectID := primitive.NewObjectIDFromTimestamp(startOfCurrentMonth)
+	endObjectID := primitive.NewObjectIDFromTimestamp(endOfCurrentMonth)
+
+	// Buat filter MongoDB
+	filter = bson.M{
+		"_id": bson.M{
+			"$gte": startObjectID,
+			"$lte": endObjectID,
+		},
+		"phonenumber": phonenumber,
+	}
+	return
 }
 
 func FilterHariIni() bson.M {

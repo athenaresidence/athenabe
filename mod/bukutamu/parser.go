@@ -8,7 +8,7 @@ import (
 func ParsePesanFlexible(pesan string) Tamu {
 	var tamu Tamu
 
-	lines := strings.Split(pesan, "\n")
+	lines := strings.Split(pesan, ">")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 

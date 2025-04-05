@@ -41,6 +41,7 @@ func BukuTamu(Profile model.Profile, Pesan model.WAMessage) (reply string) {
 				"\n" + tamu.Kategori,
 		}
 		go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifsatpam, config.APIWAText)
+		mgdb.InsertOneDoc(config.Mongoconn, "bukutamu", tamu)
 		return "Selamat Kakak berhasil mengisi buku tamu dan terdaftar sebagai mitra pedagang athena"
 	}
 	//pemberitahuan ke satpam shift jaga
@@ -65,6 +66,6 @@ func BukuTamu(Profile model.Profile, Pesan model.WAMessage) (reply string) {
 			"\nBlokNomor: " + tamu.BlokRumah,
 	}
 	go jsonapi.PostStructWithToken[model.Response]("token", Profile.Token, notifpenghuni, config.APIWAText)
-
+	mgdb.InsertOneDoc(config.Mongoconn, "bukutamu", tamu)
 	return "Selamat Kakak berhasil mengisi buku tamu untuk kunjungan ke " + tamu.BlokRumah
 }

@@ -23,7 +23,7 @@ func BukuTamu(Profile model.Profile, Pesan model.WAMessage) (reply string) {
 		return "Mohon maaf tujuan yang kakak input tidak valid:\n_" + tamu.Tujuan + "_"
 	}
 	//pemberitahuan ke grup untuk ada yang jualan masuk ke komplek
-	if tamu.Tujuan == "" {
+	if tamu.Tujuan == "niaga" {
 		notifgroup := model.TextMessage{
 			To:      Profile.WAGroupWarga,
 			IsGroup: true,

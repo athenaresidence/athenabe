@@ -13,12 +13,12 @@ func ParsePesanFlexible(pesan string) Tamu {
 		line = strings.TrimSpace(line)
 
 		switch {
-		case strings.HasPrefix(line, "asal tamu / nama mitra :"):
-			tamu.Kategori = strings.TrimSpace(strings.TrimPrefix(line, "asal tamu / nama mitra :"))
-		case strings.HasPrefix(line, "alamat yang dituju :"):
-			tamu.Tujuan = strings.TrimSpace(strings.TrimPrefix(line, "alamat yang dituju :"))
-		case strings.HasPrefix(line, "nomor plat kendaraan :"):
-			tamu.Kendaraan = strings.TrimSpace(strings.TrimPrefix(line, "nomor plat kendaraan :"))
+		case strings.HasPrefix(line, "asal :"):
+			tamu.Kategori = strings.TrimSpace(strings.TrimPrefix(line, "asal :"))
+		case strings.HasPrefix(line, "tujuan :"):
+			tamu.Tujuan = strings.TrimSpace(strings.TrimPrefix(line, "tujuan :"))
+		case strings.HasPrefix(line, "nopol :"):
+			tamu.Kendaraan = strings.TrimSpace(strings.TrimPrefix(line, "nopol :"))
 		}
 	}
 	tamu.BlokRumah = extractBlokRumah(tamu.Tujuan)

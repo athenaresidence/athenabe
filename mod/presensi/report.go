@@ -28,9 +28,10 @@ func FormatJumlahPerRating(jumlah map[int]int) string {
 	}
 
 	var sb strings.Builder
-	for i := 1; i <= 5; i++ { // urutan bintang 1–5
+	for i := 1; i <= 5; i++ {
 		if jml, ok := jumlah[i]; ok {
-			sb.WriteString(fmt.Sprintf("⭐ %d bintang: %dx\n", i, jml))
+			stars := strings.Repeat("⭐", i)
+			sb.WriteString(fmt.Sprintf("%s: %dx\n", stars, jml))
 		}
 	}
 	return sb.String()

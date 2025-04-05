@@ -196,7 +196,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		var ratemsg string
 		if err == nil {
 			ratemsg = fmt.Sprintf(
-				"*Feedback _%s_*:\nTotal Rating: %d\nRata-rata: %.2f\nDetail per rating: %v",
+				"*Feedback _%s_:*\nTotal Rating: %d\nRata-rata: %.2f\nDetail:\n%v",
 				satpam.Nama,
 				rekaprating.TotalRating,
 				rekaprating.AverageRating,
@@ -207,7 +207,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama +
 			"\nTelepon: " + satpam.Phonenumber +
 			"\n" + ratemsg +
-			"\n\nRekap Presensi Bulan ini: " +
+			"\nRekap Presensi Bulan ini: " +
 			"\nMasuk: " + strconv.FormatInt(jmlmasuk, 10) +
 			"\nPulang: " + strconv.FormatInt(jmlpulang, 10) +
 			"\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + selfistat.Hex() +
@@ -225,7 +225,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		return "Hai kak, " + Pesan.Alias_name +
 			"\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama +
 			"\n" + ratemsg +
-			"\n\nRekap Presensi Bulan ini: " +
+			"\nRekap Presensi Bulan ini: " +
 			"\nMasuk: " + strconv.FormatInt(jmlmasuk, 10) +
 			"\nPulang: " + strconv.FormatInt(jmlpulang, 10) +
 			"\n> *Jangan lupa share live loc dengan caption *pulang* setelah selesai shift ya kak, biar dianggap masuk shift jaga*"

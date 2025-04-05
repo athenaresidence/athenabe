@@ -1,6 +1,7 @@
 package mod
 
 import (
+	"github.com/gocroot/lite/mod/bukutamu"
 	"github.com/gocroot/lite/mod/daftar"
 	"github.com/gocroot/lite/mod/helpdesk"
 	"github.com/gocroot/lite/mod/idgrup"
@@ -21,6 +22,8 @@ func Caller(Profile model.Profile, Modulename string, Pesan model.WAMessage, db 
 	switch Modulename {
 	case "idgrup":
 		reply = idgrup.IDGroup(Pesan)
+	case "bukutamu":
+		reply = bukutamu.BukuTamu(Profile, Pesan)
 	case "feedbackhelpdesk":
 		reply = helpdesk.FeedbackHelpdesk(Profile, Pesan, db)
 	case "endhelpdesk":

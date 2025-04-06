@@ -37,6 +37,7 @@ type PresensiSelfie struct {
 	Commit      string             `json:"commit,omitempty" bson:"commit,omitempty"`
 	Remaining   int                `json:"remaining,omitempty" bson:"remaining,omitempty"`
 	Filehash    string             `json:"filehash,omitempty" bson:"filehash,omitempty"`
+	FaceStatus  int                `json:"facestatus,omitempty" bson:"facestatus,omitempty"`
 	Rates       []Rating           `json:"rates,omitempty" bson:"rates,omitempty"`
 }
 

@@ -43,6 +43,7 @@ type PresensiSelfie struct {
 
 type Rating struct {
 	ID       string `json:"id,omitempty" bson:"id,omitempty" query:"id" url:"id,omitempty" reqHeader:"id"`
+	Nomor    string `json:"nomor,omitempty" bson:"nomor,omitempty"`
 	Komentar string `json:"komentar,omitempty" bson:"komentar,omitempty"`
 	Rating   int    `json:"rating,omitempty" bson:"rating,omitempty"`
 }

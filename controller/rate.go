@@ -41,7 +41,7 @@ func PostRateSelfie(c *fiber.Ctx) error {
 	if err != nil {
 		respn := model.Response{
 			Response: err.Error(),
-			Info:     "Bady tidak valid",
+			Info:     "Body tidak valid",
 		}
 		return c.Status(fiber.StatusFailedDependency).JSON(respn)
 	}
@@ -81,7 +81,7 @@ func PostRateSelfie(c *fiber.Ctx) error {
 	dt := model.TextMessage{
 		To:       hasil.PhoneNumber,
 		IsGroup:  false,
-		Messages: "Anda mendapatkan feedback pekerjaan dengan rating bintang " + strconv.Itoa(rating.Rating) + "\nDengan feedback:\n" + rating.Komentar,
+		Messages: "Anda mendapatkan feedback pekerjaan dari " + rating.Nomor + " dengan rating bintang " + strconv.Itoa(rating.Rating) + "\nDengan feedback:\n" + rating.Komentar,
 	}
 	go jsonapi.PostStructWithToken[model.Response]("Token", prof.Token, dt, config.APIWAText)
 	respn := model.Response{

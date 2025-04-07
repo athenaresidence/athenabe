@@ -1,6 +1,8 @@
 package bukutamu
 
 import (
+	"regexp"
+
 	"github.com/gocroot/jsonapi"
 	"github.com/gocroot/lite/config"
 	"github.com/gocroot/lite/model"
@@ -24,7 +26,9 @@ func BukuTamu(Profile model.Profile, Pesan model.WAMessage) (reply string) {
 	}
 
 	//pemberitahuan ke grup untuk ada yang jualan masuk ke komplek
-	if tamu.Tujuan == "niaga" {
+	re := regexp.MustCompile(`\s+`)
+	cleanTujuan := re.ReplaceAllString(tamu.Tujuan, "")
+	if cleanTujuan == "niaga" {
 		notifgroup := model.TextMessage{
 			To:      Profile.WAGroupWarga,
 			IsGroup: true,

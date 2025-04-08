@@ -11,6 +11,7 @@ import (
 	"github.com/gocroot/lite/model"
 	"github.com/gocroot/mgdb"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,63 +25,11 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum cekin share live location hari ini " + err.Error()
 	}
-	conf, err := mgdb.GetOneDoc[Config](db, "config", bson.M{"phonenumber": Profile.Phonenumber})
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan dalam pengambilan config di database " + err.Error()
-	}
-	//kasih pesan tunggu sebentar untuk proses foto ke endpoint leafly
-	pesantunggu := model.TextMessage{
-		To:       Pesan.Chat_number,
-		IsGroup:  Pesan.Is_group,
-		Messages: "Mohon tunggu 1 menit kak. Jika dalam 1 menit tidak ada balasan mohon kirim ulang gambar kakak dengan caption *pulang*",
-	}
-	go jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesantunggu, config.APIWAText)
-	//kirim ke leafly untuk pengecekan gambar
-	dt := FaceDetect{
-		IDUser:    Pesan.Phone_number,
-		Base64Str: Pesan.Filedata,
-	}
-	var leaflyfaceket string
-	statuscode, faceinfo, err := jsonapi.PostStructWithToken[FaceInfo]("secret", conf.LeaflySecret, dt, conf.LeaflyURL)
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan pemanggilan API leafly " + err.Error()
-	}
-	if statuscode != http.StatusOK {
-		if statuscode == http.StatusFailedDependency {
-			leaflyfaceket = "_Terdeteksi menggunakan foto kemarin_\n"
-			//return "Wah kak " + Pesan.Alias_name + " mohon maaf, jangan kaku gitu dong. Ekspresi wajahnya ga boleh sama dengan selfie sebelumnya ya kak. Senyumnya yang lebar, giginya dilihatin, matanya pelototin, hidungnya keatasin.\n\n" + faceinfo.Error
-		} else if statuscode == http.StatusMultipleChoices {
-			leaflyfaceket = "_Terdeteksi penampakan_\n"
-			//dt := &model.ImageMessage{
-			//	To:          Pesan.Chat_number,
-			//	Base64Image: faceinfo.FileHash,
-			//	Caption:     faceinfo.Error,
-			//	IsGroup:     Pesan.Is_group,
-			//}
-			//statuscode, httpresp, err := jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, dt, Profile.URLAPIImage)
-			//if err != nil {
-			//	strconv.Itoa(statuscode)
-			//	return "Akses ke endpoint whatsaut gagal: " + err.Error() + strconv.Itoa(statuscode) + httpresp.Info + httpresp.Response
-			//}
-			//return ""
-		} else {
-			leaflyfaceket = "_Wajah tidak terdeteksi_\n"
-			if faceinfo.FileHash == "" {
-				faceinfo.FileHash = dt.Base64Str
-			}
-			//return "Wah kak " + Pesan.Alias_name + " mohon maaf:\n" + faceinfo.Error + "\nCode: " + strconv.Itoa(statuscode)
-		}
-	}
 	pselfie := PresensiSelfie{
 		CekInLokasi: pstoday,
 		IsMasuk:     false,
-		IDUser:      faceinfo.PhoneNumber,
-		Commit:      faceinfo.Commit,
-		Filehash:    faceinfo.FileHash,
-		FaceStatus:  statuscode,
-		Remaining:   faceinfo.Remaining,
 	}
-	_, err = mgdb.InsertOneDoc(db, "selfie", pselfie)
+	selfistat, err := mgdb.InsertOneDoc(db, "selfie", pselfie)
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
 	}
@@ -115,7 +64,8 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	//kalo satpam maka kirim ke grup dan simpan database
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
 	if err != mongo.ErrNoDocuments {
-		msg := leaflyfaceket + "*Pulang Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
+		go FaceDetectLeafly(Profile, Pesan, db, selfistat) //kirim deteksi leafly
+		msg := "*Pulang Shift Jaga*\n" + satpam.Nama + "\n" + satpam.Phonenumber + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
 			IsGroup:     true,
@@ -129,7 +79,7 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 		}
 		mgdb.InsertOneDoc(config.Mongoconn, "logpresensi", datapresensi)
 	}
-	return leaflyfaceket + "Hai kak, " + Pesan.Alias_name + "\nBerhasil Presensi Pulang di lokasi:" + pstoday.Lokasi.Nama + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
+	return "Hai kak, " + Pesan.Alias_name + "\nBerhasil Presensi Pulang di lokasi:" + pstoday.Lokasi.Nama + "\nHadir selama: " + KetJam + "\n*Skor: " + skorValue + "*"
 
 }
 
@@ -137,67 +87,14 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	if Pesan.Filedata == "" {
 		return "Kirim pap nya dulu dong kak.. " + Pesan.Alias_name
 	}
-
 	filter := bson.M{"_id": mgdb.TodayFilter(), "phonenumber": Pesan.Phone_number, "ismasuk": true}
 	pstoday, err := mgdb.GetOneDoc[PresensiLokasi](db, "presensi", filter)
 	if err != nil {
 		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum cekin share live location hari ini, silahkan share live location / berbagi lokasi terkini dengan ditambah caption\n*masuk*\n_" + err.Error() + "_"
 	}
-	conf, err := mgdb.GetOneDoc[Config](db, "config", bson.M{"phonenumber": Profile.Phonenumber})
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan dalam pengambilan config di database " + err.Error()
-	}
-	//kasih pesan tunggu sebentar untuk proses foto ke endpoint leafly
-	pesantunggu := model.TextMessage{
-		To:       Pesan.Chat_number,
-		IsGroup:  Pesan.Is_group,
-		Messages: "Mohon tunggu 1 menit kak. Jika dalam 1 menit tidak ada balasan mohon kirim ulang gambar kakak dengan caption *masuk*",
-	}
-	go jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesantunggu, config.APIWAText)
-	//sending foto ke leafly, ambil keterangan analisisnya
-	dt := FaceDetect{
-		IDUser:    Pesan.Phone_number,
-		Base64Str: Pesan.Filedata,
-	}
-	var leaflyfaceket string
-	statuscode, faceinfo, err := jsonapi.PostStructWithToken[FaceInfo]("secret", conf.LeaflySecret, dt, conf.LeaflyURL)
-	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan pemanggilan API leafly :" + err.Error() + " Mohon kirim ulang foto kembali dengan caption *masuk*"
-	}
-	if statuscode != http.StatusOK {
-		if statuscode == http.StatusFailedDependency { //deteksi penggunaan foto yang sama
-			leaflyfaceket = "_Terdeteksi menggunakan foto kemarin_"
-			//return "Wah kak " + Pesan.Alias_name + " mohon maaf, jangan kaku gitu dong. Ekspresi wajahnya ga boleh sama dengan selfie sebelumnya ya kak. Senyumnya yang lebar, giginya dilihatin, matanya pelototin, hidungnya keatasin.\n\n" + faceinfo.Error
-		} else if statuscode == http.StatusMultipleChoices { //deteksi wajah lebih dari 1 : status 300
-			//dt := &model.ImageMessage{
-			//	To:          Pesan.Chat_number,
-			//	Base64Image: faceinfo.FileHash,
-			//	Caption:     faceinfo.Error,
-			//	IsGroup:     Pesan.Is_group,
-			//}
-			leaflyfaceket = "_Terdeteksi penampakan_"
-			//statuscode, httpresp, err := jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, dt, Profile.URLAPIImage)
-			//if err != nil {
-			//	return "Akses ke endpoint whatsaut gagal: " + err.Error() + strconv.Itoa(statuscode) + httpresp.Info + httpresp.Response
-			//}
-			//
-			return ""
-		} else { //tidak terdeteksi wajah : 410 status
-			leaflyfaceket = "_Wajah tidak terdeteksi_"
-			if faceinfo.FileHash == "" {
-				faceinfo.FileHash = dt.Base64Str
-			}
-			//return "Wah kak " + Pesan.Alias_name + " mohon maaf:\n" + faceinfo.Error + "\nCode: " + strconv.Itoa(statuscode)
-		}
-	}
 	pselfie := PresensiSelfie{
 		CekInLokasi: pstoday,
 		IsMasuk:     true,
-		IDUser:      faceinfo.PhoneNumber,
-		Commit:      faceinfo.Commit,
-		Filehash:    faceinfo.FileHash,
-		FaceStatus:  statuscode,
-		Remaining:   faceinfo.Remaining,
 	}
 	//kalo satpam maka kirim ke grup dan diri sendiri
 	satpam, err := mgdb.GetOneDoc[model.Satpam](config.Mongoconn, "satpam", bson.M{"phonenumber": Pesan.Phone_number})
@@ -208,6 +105,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if err != nil {
 			return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan input ke database " + err.Error()
 		}
+		go FaceDetectLeafly(Profile, Pesan, db, selfistat) //kirim deteksi leafly
 		//ambil rekap bulan berjalan
 		jmlmasuk, jmlpulang := RekapBulanBerjalanPerPhoneNumber(satpam.Phonenumber)
 		rekaprating, err := RekapRatesBulanBerjalan(config.Mongoconn, satpam.Phonenumber)
@@ -221,8 +119,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 				FormatJumlahPerRating(rekaprating.JumlahPerRating),
 			)
 		}
-
-		msg := leaflyfaceket + "\n" + "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama +
+		msg := "*Masuk Shift Jaga Satpam Sekarang*\nNama: " + satpam.Nama +
 			"\nTelepon: " + satpam.Phonenumber +
 			"\n" + ratemsg +
 			"\nRekap Presensi Bulan ini: " +
@@ -240,7 +137,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 		if stat != 200 {
 			return "Ada kesalahan pengiriman notif ke grup\ngrup: " + notifgroup.To + "\ncaption: " + notifgroup.Caption + "\n" + err.Error() + "\n" + resp.Response
 		}
-		return leaflyfaceket + "\n" + "Hai kak, " + Pesan.Alias_name +
+		return "Hai kak, " + Pesan.Alias_name +
 			"\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama +
 			"\n" + ratemsg +
 			"\nRekap Presensi Bulan ini: " +
@@ -249,6 +146,50 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 			"\n> *Jangan lupa share live loc dengan caption *pulang* setelah selesai shift ya kak, biar dianggap masuk shift jaga*"
 	}
 	return "Hai kak, " + Pesan.Alias_name + ". Mohon maaf nomor kakak belum terdaftar di sistem kita, hubungin admin ya kak.\nCekin Masuk di lokasi: " + pstoday.Lokasi.Nama
+}
+
+func FaceDetectLeafly(Profile model.Profile, Pesan model.WAMessage, db *mongo.Database, idselfie primitive.ObjectID) string {
+	conf, err := mgdb.GetOneDoc[Config](db, "config", bson.M{"phonenumber": Profile.Phonenumber})
+	if err != nil {
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan dalam pengambilan config di database " + err.Error()
+	}
+	//sending foto ke leafly, ambil keterangan analisisnya
+	dt := FaceDetect{
+		IDUser:    Pesan.Phone_number,
+		Base64Str: Pesan.Filedata,
+	}
+	var leaflyfaceket string
+	statuscode, faceinfo, err := jsonapi.PostStructWithToken[FaceInfo]("secret", conf.LeaflySecret, dt, conf.LeaflyURL)
+	if err != nil {
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf ada kesalahan pemanggilan API leafly :" + err.Error() + " Mohon kirim ulang foto kembali dengan caption *masuk*"
+	}
+	if statuscode != http.StatusOK {
+		if statuscode == http.StatusFailedDependency { //deteksi penggunaan foto yang sama
+			leaflyfaceket = "Ubur-ubur ikan lele\n_foto kemarin le_"
+		} else if statuscode == http.StatusMultipleChoices { //deteksi wajah lebih dari 1 : status 300
+			leaflyfaceket = "Ubur-ubur ikan lele\n_ada penampakan le_"
+			return ""
+		} else { //tidak terdeteksi wajah : 410 status
+			leaflyfaceket = "Ubur-ubur ikan lele\n_Wajah rata bre_"
+			if faceinfo.FileHash == "" {
+				faceinfo.FileHash = dt.Base64Str
+			}
+			//return "Wah kak " + Pesan.Alias_name + " mohon maaf:\n" + faceinfo.Error + "\nCode: " + strconv.Itoa(statuscode)
+		}
+	}
+	go mgdb.UpdateOneDoc(db, "selfie", bson.M{"_id": idselfie}, bson.M{"iduser": faceinfo.PhoneNumber,
+		"commit":     faceinfo.Commit,
+		"filehash":   faceinfo.FileHash,
+		"facestatus": statuscode,
+		"remaining":  faceinfo.Remaining,
+	})
+	pesandeteksi := model.TextMessage{
+		To:       Profile.WAGroupWarga,
+		IsGroup:  true,
+		Messages: leaflyfaceket,
+	}
+	jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesandeteksi, config.APIWAText)
+	return leaflyfaceket
 }
 
 func PresensiMasuk(Pesan model.WAMessage, db *mongo.Database) (reply string) {

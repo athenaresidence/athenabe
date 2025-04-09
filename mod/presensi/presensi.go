@@ -23,7 +23,7 @@ func CekSelfiePulang(Profile model.Profile, Pesan model.WAMessage, db *mongo.Dat
 	filter := bson.M{"_id": mgdb.TodayFilter(), "phonenumber": Pesan.Phone_number} //, "ismasuk": false}
 	pstoday, err := mgdb.GetOneDoc[PresensiLokasi](db, "presensi", filter)
 	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum share live location dulu, silahkan share live location / berbagi lokasi terkini dengan ditambah caption\n*pulang*"
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak share live location expired dan berlaku hanya 5 menit, silahkan share live location / berbagi lokasi terkini dengan ditambah caption\n*pulang*"
 	}
 	pselfie := PresensiSelfie{
 		CekInLokasi: pstoday,
@@ -90,7 +90,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 	filter := bson.M{"_id": mgdb.TodayFilter(), "phonenumber": Pesan.Phone_number, "ismasuk": true}
 	pstoday, err := mgdb.GetOneDoc[PresensiLokasi](db, "presensi", filter)
 	if err != nil {
-		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak belum share live location dulu, silahkan share live location / berbagi lokasi terkini dengan ditambah caption\n*masuk*"
+		return "Wah kak " + Pesan.Alias_name + " mohon maaf kakak share live location expired dan berlaku hanya 5 menit, silahkan share live location / berbagi lokasi terkini dengan ditambah caption\n*masuk*"
 	}
 	pselfie := PresensiSelfie{
 		CekInLokasi: pstoday,

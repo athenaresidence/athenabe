@@ -125,7 +125,7 @@ func CekSelfieMasuk(Profile model.Profile, Pesan model.WAMessage, db *mongo.Data
 			"\nRekap Presensi Bulan ini: " +
 			"\nMasuk: " + strconv.FormatInt(jmlmasuk, 10) +
 			"\nPulang: " + strconv.FormatInt(jmlpulang, 10) +
-			"\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.github.io/rate/#" + selfistat.Hex() +
+			"\n\nMohon berikan feedback pekerjaan selama shift jaga berjalan ke:\nhttps://athenaresidence.ngops.link/rate/#" + selfistat.Hex() +
 			"\n\n> Mari jadikan komplek kita lebih?"
 		notifgroup := model.ImageMessage{
 			To:          Profile.WAGroupWarga,
@@ -176,6 +176,12 @@ func FaceDetectLeafly(Profile model.Profile, Pesan model.WAMessage, db *mongo.Da
 			}
 			//return "Wah kak " + Pesan.Alias_name + " mohon maaf:\n" + faceinfo.Error + "\nCode: " + strconv.Itoa(statuscode)
 		}
+		pesandeteksi := model.TextMessage{
+			To:       Profile.WAGroupWarga,
+			IsGroup:  true,
+			Messages: leaflyfaceket,
+		}
+		jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesandeteksi, config.APIWAText)
 	}
 	go mgdb.UpdateOneDoc(db, "selfie", bson.M{"_id": idselfie}, bson.M{"iduser": faceinfo.PhoneNumber,
 		"commit":     faceinfo.Commit,
@@ -183,12 +189,6 @@ func FaceDetectLeafly(Profile model.Profile, Pesan model.WAMessage, db *mongo.Da
 		"facestatus": statuscode,
 		"remaining":  faceinfo.Remaining,
 	})
-	pesandeteksi := model.TextMessage{
-		To:       Profile.WAGroupWarga,
-		IsGroup:  true,
-		Messages: leaflyfaceket,
-	}
-	jsonapi.PostStructWithToken[model.Response]("Token", Profile.Token, pesandeteksi, config.APIWAText)
 	return leaflyfaceket
 }
 
